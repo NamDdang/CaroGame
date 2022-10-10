@@ -1,0 +1,9 @@
+﻿  Board.cpp
+  Common.cpp
+  Game.cpp
+  main.cpp
+  Player.cpp
+  Point.cpp
+  SaveDataToFile.cpp
+  Generating Code...
+  CaroGame.vcxproj -> D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\Debug\CaroGame.exe
