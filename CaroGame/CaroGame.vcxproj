@@ -18,6 +18,21 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="Controller.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="SaveDataToFile.h" />
+    <ClInclude Include="View.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Common.cpp" />
+    <ClCompile Include="Controller.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="SaveDataToFile.cpp" />
+    <ClCompile Include="View.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -138,23 +153,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="Board.h" />
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="Point.h" />
-    <ClInclude Include="SaveDataToFile.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Board.cpp" />
-    <ClCompile Include="Common.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Point.cpp" />
-    <ClCompile Include="SaveDataToFile.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

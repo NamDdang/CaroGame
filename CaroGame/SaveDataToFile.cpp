@@ -90,10 +90,37 @@ void searchByName(string name)
             cout << "Number of Wins: " << numWin << endl;
             cout << "Number of Losses: " << numLose << endl;
             cout << "Number of Draws: " << numDraw << endl;
+            findPlayerSameRank(namePlayer, numWin, numLose);
             return;
         }
     }
-
+}
+void findPlayerSameRank(string name, int win, int lose)
+{
+    if (!is_file_exist(filename)) { createFile(); }
+    string namePlayer;
+    string temp; // bien tranh ghi lai mot ten nhieu lan
+    int numWin, numLose, numDraw;
+    ifstream fin;
+    fin.open(filename);
+    string charsInLine;
+    while (!fin.eof())
+    {
+        getline(fin, charsInLine);
+        fin >> namePlayer >> numWin >> numLose >> numDraw;
+        if ((namePlayer != name) && (numWin == win) && (numLose - lose >= -1) && (numLose - lose <= 1))
+        {
+            if (temp == namePlayer) return;
+            SetColor(YELLOW);
+            cout << "Player Same Rank\n";
+            SetColor(WHITE);
+            cout << "Name: " << namePlayer << endl;
+            cout << "Number of Wins: " << numWin << endl;
+            cout << "Number of Losses: " << numLose << endl;
+            cout << "Number of Draws: " << numDraw << endl;
+            temp = namePlayer;
+        }
+    }
 }
 void eraseOldResult(string name)
 {

@@ -1,24 +1,2 @@
-﻿  Game.cpp
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(15,1): warning C4005: 'LIGHT': macro redefinition
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(13): message : see previous definition of 'LIGHT'
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(16,1): warning C4005: 'LIGHT': macro redefinition
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(15): message : see previous definition of 'LIGHT'
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(17,1): warning C4005: 'LIGHT': macro redefinition
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(16): message : see previous definition of 'LIGHT'
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(18,1): warning C4005: 'LIGHT': macro redefinition
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(17): message : see previous definition of 'LIGHT'
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(19,1): warning C4005: 'LIGHT': macro redefinition
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(18): message : see previous definition of 'LIGHT'
-  main.cpp
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(15,1): warning C4005: 'LIGHT': macro redefinition
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(13): message : see previous definition of 'LIGHT'
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(16,1): warning C4005: 'LIGHT': macro redefinition
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(15): message : see previous definition of 'LIGHT'
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(17,1): warning C4005: 'LIGHT': macro redefinition
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(16): message : see previous definition of 'LIGHT'
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(18,1): warning C4005: 'LIGHT': macro redefinition
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(17): message : see previous definition of 'LIGHT'
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(19,1): warning C4005: 'LIGHT': macro redefinition
-D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Common.h(18): message : see previous definition of 'LIGHT'
-  Generating Code...
+﻿  Model.cpp
   CaroGame.vcxproj -> D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\x64\Debug\CaroGame.exe

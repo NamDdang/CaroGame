@@ -15,12 +15,3 @@ void SetColor(int ForgC)
     }
     return;
 }
-void prompt(string s)
-{
-    cout << s;
-}
-void prompt(string s, int Color)
-{
-    SetColor(Color);
-    cout << s;
-}
