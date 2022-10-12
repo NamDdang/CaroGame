@@ -1,5 +1,6 @@
 #include "Controller.h"
 #include "SaveDataToFile.h"
+#include <Windows.h>
 using namespace Controller;
 // Game Controller
 GameController::GameController(Game* model, GameView* view)
@@ -15,8 +16,6 @@ bool GameController::GetTurn() { return model->GetTurn(); }
 Board* GameController::GetBoard() { return model->GetBoard(); }
 void GameController::SetExit(bool value) { model->SetExit(value); }
 bool GameController::GetExit() { return model->GetExit(); }
-void GameController::SetOption(char value) { model->SetOption(value); }
-char GameController::GetOption() { return model->GetOption(); }
 
 bool GameController::isWonGame()
 {
@@ -34,7 +33,27 @@ void GameController::SetPlayerWon(int value)
 {
 	model->SetPlayerWon(value);
 }
-int GameController::getCommand() { return model->getCommand(); }
+
+void GameController::InitGame(int pSize)
+{
+    model->Init(pSize);
+}
+void GameController::SaveMove(int col, int row, int value) {
+    model->SaveMove(col, row, value);
+}
+void GameController::ResetReplayMoves()
+{
+    model->ResetReplayMoves();
+}
+bool GameController::isContinue() { return !model->GetExit(); }
+
+void GameController::exitGame()
+{
+    system("cls");
+
+    model->SetExit(true);
+    exit(0);
+}
 
 void GameController::DrawBoard()
 {
@@ -192,38 +211,6 @@ bool GameController::RCrossWin(int x, int y)
     return false;
 }
 
-void GameController::InitGame(int pSize)
-{
-    model->Init(pSize);
-}
-
-void GameController::InputOption()
-{
-    char key;
-    cin >> key;
-    if (key >= '0' && key <= '9')
-        model->SetOption(key);
-    else model->SetOption('0');
-}
-bool GameController::isContinue() { return !model->GetExit(); }
-
-char GameController::waitKeyBoard()
-{
-    return model->waitKeyBoard();
-}
-
-char GameController::askContinue()
-{
-    return model->getCommand();
-}
-
-void GameController::exitGame()
-{
-    system("cls");
-
-    model->SetExit(true);
-}
-
 void GameController::CheckWinGame()
 {
     for (int x = 0; x <= model->GetBoard()->getSize() - 1; x++)
@@ -253,34 +240,68 @@ void GameController::UpdateWinLoseRecord()
         model->GetUser2().IncreWin();
     }
     eraseOldResult(model->GetUser1().GetName());
-    writeInFile(model->GetUser1());
+    writePlayerInFile(model->GetUser1());
     eraseOldResult(model->GetUser2().GetName());
-    writeInFile(model->GetUser2());
+    writePlayerInFile(model->GetUser2());
 }
 void GameController::UpdateDrawRecord()
 {
     model->GetUser1().IncreDraw();
     model->GetUser2().IncreDraw();
     eraseOldResult(model->GetUser1().GetName());
-    writeInFile(model->GetUser1());
+    writePlayerInFile(model->GetUser1());
     eraseOldResult(model->GetUser2().GetName());
-    writeInFile(model->GetUser2());
+    writePlayerInFile(model->GetUser2());
+}
+void GameController::ReplayLastGame() {
+    list<Move>::iterator i;
+    Game* replayGame = new Game(model->GetBoard()->getSize());
+    list<Move> replayMoves = model->GetReplayMoves();
+    i = replayMoves.begin();
+    while (i != replayMoves.end()) {
+        system("cls");
+        replayGame->SetUser1(model->GetUser1());
+        replayGame->SetUser2(model->GetUser2());
+        replayGame->GetBoard()->SetXO((*i).col, (*i).row, (*i).value);
+        view->DrawGameScreen(replayGame);
+        //delay
+        Sleep(1000);
+        i++;
+    }
+}
+void GameController::ReplayGameById(char id) {
+    list<Move> replayMoves = getReplayMoveById(id);
+    string user1 = getReplayPlayerById(id, 1);
+    string user2 = getReplayPlayerById(id, 2);
+    list<Move>::iterator i;
+    Game* replayGame = new Game(model->GetBoard()->getSize());
+    i = replayMoves.begin();
+    while (i != replayMoves.end()) {
+        system("cls");
+        replayGame->GetUser1().SetName(user1);
+        replayGame->GetUser2().SetName(user2);
+        replayGame->GetBoard()->SetXO((*i).col, (*i).row, (*i).value);
+        view->DrawGameScreen(replayGame);
+        //delay
+        Sleep(1000);
+        i++;
+    }
 }
 void GameController::PlayerInputAccount()
 {
-    model->GetUser1().Input();
+    //model->GetUser1().Input();
     view->prompt("Input player 1: ");
     model->GetUser1().Input();
-    if (checkName(model->GetUser1().GetName()) == 0)
+    if (checkPlayerName(model->GetUser1().GetName()) == 0)
     {
-        writeInFile(model->GetUser1());
+        writePlayerInFile(model->GetUser1());
     }
     updateCurrentResult(model->GetUser1());
     view->prompt("Input player 2: ");
     model->GetUser2().Input();
-    if (checkName(model->GetUser2().GetName()) == 0)
+    if (checkPlayerName(model->GetUser2().GetName()) == 0)
     {
-        writeInFile(model->GetUser2());
+        writePlayerInFile(model->GetUser2());
     }
     updateCurrentResult(model->GetUser2());
 }
@@ -288,14 +309,15 @@ void GameController::PlayerChooseAccount()
 {
     view->prompt("List Account: \n", YELLOW);
     SetColor(WHITE);
-    showAllInFile();
+    showAllRecordInFile();
     view->prompt("Input name account you want to play or create new account:\n");
     PlayerInputAccount();
 }
 // Ham de nguoi choi nhap o can danh
 void GameController::PlayerInputMove()
 {
-    int inputCol, inputRow;
+    char charCol, charRow; // ky tu nguoi choi nhap
+    int inputCol = -1, inputRow = -1; // chi so hang, cot nguoi choi nhap
     if (GetTurn() == true)
     {
         view->prompt("Player ", WHITE);
@@ -304,10 +326,13 @@ void GameController::PlayerInputMove()
         view->prompt(": ", YELLOW);
         do
         {
-            cin >> inputRow;
-            cin >> inputCol;
+            cin >> charRow;
+            cin >> charCol;
+            inputRow = (int)charRow - 48;
+            inputCol = (int)charCol - 48;
         } while (inputCol < 0 || inputCol > model->GetBoard()->getSize() - 1 || inputRow < 0 || inputRow > model->GetBoard()->getSize() - 1 || model->GetBoard()->GetXO(inputCol, inputRow) != 0);
         model->GetBoard()->SetXO(inputCol, inputRow, VX);
+        SaveMove(inputCol, inputRow, VX);
     }
     if (GetTurn() == false)
     {
@@ -317,10 +342,13 @@ void GameController::PlayerInputMove()
         view->prompt(": ", YELLOW);
         do
         {
-            cin >> inputRow;
-            cin >> inputCol;
+            cin >> charRow;
+            cin >> charCol;
+            inputRow = (int)charRow - 48;
+            inputCol = (int)charCol - 48;
         } while (inputCol < 0 || inputCol > model->GetBoard()->getSize() - 1 || inputRow < 0 || inputRow > model->GetBoard()->getSize() - 1 || model->GetBoard()->GetXO(inputCol, inputRow) != 0);
         model->GetBoard()->SetXO(inputCol, inputRow, VO);
+        SaveMove(inputCol, inputRow, VO);
     }
 }
 void GameController::ChangePlayer()
@@ -340,7 +368,7 @@ void GameController::PlayInBoard()
     ChangePlayer();
     CheckWinGame();
 }
-void GameController::NewGame()
+void GameController::ResetGame()
 {
     ResetBoard();
     SetTurn(true);
@@ -348,219 +376,269 @@ void GameController::NewGame()
     SetWonGame(false);
     SetPlayerWon(0);
 }
-void GameController::StartGame(string nameSearch)
+void GameController::MainMenu()
 {
-    NewGame();
-    while (isContinue())
+    char key;
+    do
     {
         system("cls");
+        view->MenuHeader(MAIN_MENU);
         view->MainMenu();
-        InputOption();
-        switch (GetOption())
+        cin >> key;
+        switch (key)
         {
-        case '1': // Play with Other Player
-            system("cls");
-            SetColor(15);
-            PlayerChooseAccount();
-            while (GetOption() != '0')
-            {
-                if (isWonGame() == false)
-                {
-                    system("cls");
-                    DrawGameScreen();
-                    if (CheckFullBoard())
-                    {
-                        UpdateDrawRecord();
-                        view->prompt("DRAW!\n", YELLOW);
-                        view->prompt("1.Play ", RED);
-                        view->prompt("again\n", WHITE);
-                        view->prompt("2.Back ", RED);
-                        view->prompt("to MAIN MENU\n", WHITE);
-                        view->prompt("Press number to choice: ", WHITE);
-                        InputOption();
-                        while (GetOption() < '1' || GetOption() > '2')
-                        {
-                            view->prompt("Press again\n");
-                            InputOption();
-                        }
-                        switch (GetOption())
-                        {
-                        case '1':
-                            NewGame();
-                            break;
-                        case '2':
-                            NewGame();
-                            SetOption('0');
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        PlayInBoard();
-                    }
-                }
-                if (isWonGame() == true)
-                {
-                    UpdateWinLoseRecord();
-                    system("cls");
-                    DrawGameScreen();
-                    view->prompt("Player ", WHITE);
-                    if (GetPlayerWon() == VX)
-                    {
-                        view->prompt(model->GetUser1().GetName(), P1);
-                    }
-                    else if (GetPlayerWon() == VO)
-                    {
-                        view->prompt(model->GetUser2().GetName(), P2);
-                    }
-                    view->prompt(" won!\n", YELLOW);
-                    view->prompt("1.Play ", RED);
-                    view->prompt("again\n", WHITE);
-                    view->prompt("2.Back ", RED);
-                    view->prompt("to MAIN MENU\n", WHITE);
-                    view->prompt("Press number to choice: ", WHITE);
-                    InputOption();
-                    while (GetOption() < '1' || GetOption() > '2')
-                    {
-                        view->prompt("Press again\n");
-                        InputOption();
-                    }
-                    switch (GetOption())
-                    {
-                    case '1':
-                        NewGame();
-                        break;
-                    case '2':
-                        NewGame();
-                        SetOption('0');
-                        break;
-                    }
-                }
-            }
+        case '1':
+            PlayWithOtherPlayer();
             break;
-        case '2': // Replay
-            while (GetOption() != '0')
-            {
-                system("cls");
-                view->prompt("This is DEMO version, please wait for a full version. We will update soon ;)\n");
-                view->prompt("1.Back ", RED);
-                view->prompt("to MAIN MENU\n", WHITE);
-                view->prompt("Press number to choice: ", WHITE);
-                InputOption();
-                if (GetOption() == '1') SetOption('0');
-            }
+        case '2':
+            Replay();
             break;
-        case '3': // Player's Infomation
-            while (GetOption() != '0')
-            {
-                system("cls");
-                view->prompt("*-------", YELLOW);
-                view->prompt("Players's Information", WHITE);
-                view->prompt("-------*\n", YELLOW);
-                view->prompt("1.Show ", RED);
-                view->prompt("All Player\n", WHITE);
-                view->prompt("2.Search ", RED);
-                view->prompt("player by Name\n", WHITE);
-                view->prompt("3.Back ", RED);
-                view->prompt("to MAIN MENU\n", WHITE);
-                view->prompt("Press number to choice:", WHITE);
-                InputOption();
-                switch (GetOption())
-                {
-                case '1': // Show All Player
-                    while (GetOption() == '1')
-                    {
-                        system("cls");
-                        view->prompt("*-------", YELLOW);
-                        view->prompt("Players's Records", WHITE);
-                        view->prompt("-------*\n", YELLOW);
-                        SetColor(15);
-                        showAllInFile();
-                        view->prompt("1.Back ", RED);
-                        view->prompt("to Player's Infomation\n", WHITE);
-                        view->prompt("2.Back ", RED);
-                        view->prompt("to MAIN MENU\n", WHITE);
-                        view->prompt("Press number to choice:", WHITE);
-                        InputOption();
-                        while (GetOption() < '1' || GetOption() > '2')
-                        {
-                            view->prompt("Press again\n");
-                            InputOption();
-                        }
-                        switch (GetOption())
-                        {
-                        case '1':
-                            SetOption('3');
-                            break;
-                        case '2':
-                            SetOption('0');
-                            break;
-                        }
-                    }
-                    break;
-                case '2': // Search play by name
-                    while (GetOption() == '2')
-                    {
-                        system("cls");
-                        view->prompt("*-------", YELLOW);
-                        view->prompt("Search Player by Name", WHITE);
-                        view->prompt("-------*\n", YELLOW);
-                        view->prompt("Input player's name: ", YELLOW);
-                        cin >> nameSearch;
-                        searchByName(nameSearch);
-                        view->prompt("1.Continue ", RED);
-                        view->prompt("Search\n", WHITE);
-                        view->prompt("2.Back ", RED);
-                        view->prompt("to Player's Infomation\n", WHITE);
-                        view->prompt("3.Back ", RED);
-                        view->prompt("to MAIN MENU\n", WHITE);
-                        view->prompt("Press number to choice:", WHITE);
-                        InputOption();
-                        while (GetOption() < '1' || GetOption() > '3')
-                        {
-                            view->prompt("Press again\n");
-                            InputOption();
-                        }
-                        switch (GetOption())
-                        {
-                        case '1':
-                            SetOption('2');
-                            break;
-                        case '2':
-                            SetOption('3');
-                            break;
-                        case '3':
-                            SetOption('0');
-                            break;
-                        }
-                    }
-                    break;
-                case '3': // Back to Main Menu
-                    SetOption('0');
-                    break;
-                default:
-                    SetOption('3');
-                    break;
-                }
-            }
+        case '3':
+            PlayerInformationMenu();
             break;
-        case '4': // Guide
-            while (GetOption() != '0')
-            {
-                system("cls");
-                view->Guide();
-                view->prompt("1.Back ", RED);
-                view->prompt("to MAIN MENU\n", WHITE);
-                view->prompt("Press number to choice: ", WHITE);
-                InputOption();
-                if (GetOption() == '1') SetOption('0');
-            }
+        case '4':
+            Guide();
             break;
-        case '5': // Exit
+        case '5':
             exitGame();
+            break;
         default:
             break;
         }
+    } while (key < '1' || key > '5');
+}
+void GameController::PlayWithOtherPlayer()
+{
+    system("cls");
+    SetColor(15);
+    PlayerChooseAccount();
+    ResetReplayMoves();
+    do
+    {
+        if (isWonGame() == false)
+        {
+            system("cls");
+            DrawGameScreen();
+            if (CheckFullBoard())
+            {
+                UpdateDrawRecord();
+                view->prompt("DRAW!\n", YELLOW);
+                AskToSaveReplay();
+                GameOverMenu();
+            }
+            else
+            {
+                PlayInBoard();
+            }
+        }
+        if (isWonGame() == true)
+        {
+            UpdateWinLoseRecord();
+            system("cls");
+            DrawGameScreen();
+            view->prompt("Player ", WHITE);
+            if (GetPlayerWon() == VX)
+            {
+                view->prompt(model->GetUser1().GetName(), P1);
+            }
+            else if (GetPlayerWon() == VO)
+            {
+                view->prompt(model->GetUser2().GetName(), P2);
+            }
+            view->prompt(" won!\n", YELLOW);
+            AskToSaveReplay();
+            GameOverMenu();
+        }
+    } while (isWonGame() == false);
+}
+void GameController::GameOverMenu()
+{
+    char key;
+    view->GameOverMenu();
+    do
+    {
+        cin >> key;
+        switch (key)
+        {
+        case '1':
+            ResetGame();
+            ResetReplayMoves();
+            break;
+        case '2':
+            ResetGame();
+            MainMenu();
+            break;
+        default:
+            view->prompt("Press again\n");
+            break;
+        }
+    } while (key < '1' || key > '2');
+}
+void GameController::AskToSaveReplay()
+{
+    char key;
+    view->AskToSaveReplay();
+    do
+    {
+        cin >> key;
+        switch (key)
+        {
+        case '1':
+            saveReplayInFile(model);
+            view->prompt("Saved successfully!\n", YELLOW);
+            break;
+        case '2':
+            // Do nothing
+            break;
+        default:
+            view->prompt("Press again\n");
+            break;
+        }
+    } while (key < '1' || key > '2');
+}
+void GameController::Replay()
+{
+    char key;
+    system("cls");
+    view->MenuHeader(REPLAY);
+    view->prompt("History Game: \n", YELLOW);
+    SetColor(WHITE);
+    showAllReplayGameInFile();
+    view->prompt("Input id game you want to replay:");
+    char idGame;
+    cin >> idGame;
+    do
+    {
+        system("cls");
+        ReplayGameById(idGame);
+        view->Replay();
+        cin >> key;
+        while (key < '1' || key > '3')
+        {
+            view->prompt("Press again\n");
+            cin >> key;
+        }
+        switch (key)
+        {
+        case '1':
+            break;
+        case '2':
+            Replay();
+            break;
+        case '3':
+            MainMenu();
+            break;
+        default:
+            view->prompt("Press again\n");
+            break;
+        }
+    } while (key < '2' || key > '3');
+}
+void GameController::PlayerInformationMenu()
+{
+    char key;
+    do
+    {
+        system("cls");
+        view->MenuHeader(PLAYER_INFORMATION);
+        view->PlayerInfomationMenu();
+        cin >> key;
+        switch (key)
+        {
+        case '1':
+            ShowAllPlayer();
+            break;
+        case '2':
+            SearchPlayerByName();
+            break;
+        case '3':
+            MainMenu();
+            break;
+        default:
+            break;
+        }
+    } while (key < '1' || key > '3');
+}
+void GameController::ShowAllPlayer()
+{
+    char key;
+    do
+    {
+        system("cls");
+        view->MenuHeader(SHOW_ALL_PLAYER);
+        SetColor(15);
+        showAllRecordInFile();
+        view->ShowAllPlayer();
+        cin >> key;
+        switch (key)
+        {
+        case '1':
+            PlayerInformationMenu();
+            break;
+        case '2':
+            MainMenu();
+            break;
+        default:
+            break;
+        }
+    } while (key < '1' || key > '2');
+}
+void GameController::SearchPlayerByName()
+{
+    system("cls");
+    string nameSearch;
+    char key;
+    view->MenuHeader(SEARCH_PLAYER_BY_NAME);
+    view->prompt("Input player's name: ", YELLOW);
+    cin >> nameSearch;
+    do
+    {
+        system("cls");
+        view->MenuHeader(SEARCH_PLAYER_BY_NAME);
+        searchPlayerByName(nameSearch);
+        view->SearchPlayerByName();
+        cin >> key;
+        switch (key)
+        {
+        case '1':
+            SearchPlayerByName();
+            break;
+        case '2':
+            PlayerInformationMenu();
+            break;
+        case '3':
+            MainMenu();
+            break;
+        default:
+            break;
+        }
+    } while (key < '1' || key > '3');
+}
+void GameController::Guide()
+{
+    char key;
+    do
+    {
+        system("cls");
+        view->MenuHeader(GUIDE);
+        view->Guide();
+        cin >> key;
+        switch (key)
+        {
+        case '1':
+            MainMenu();
+            break;
+        default:
+            break;
+        }
+    } while (key != '1');
+}
+void GameController::StartGame()
+{
+    ResetGame();
+    while (isContinue())
+    {
+        MainMenu();
     }
 }
 // Point Controller

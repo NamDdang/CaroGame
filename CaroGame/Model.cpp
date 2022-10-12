@@ -1,5 +1,5 @@
 #include "Model.h"
-#include <conio.h>
+
 using namespace Model;
 // Point
 Point::Point() { x = y = check = 0; }
@@ -58,23 +58,23 @@ Board::Board(int pSize)
 		size = pSize;
 	}
 	pArr = new Point * [size];
-	for (int i = 0; i < size; i++) pArr[i] = new Point[size];
+	for (int i = 0; i <= size; i++) pArr[i] = new Point[size];
 }
 
 Board::Board(const Board& board)
 {
 	size = board.size;
 	pArr = new Point * [size];
-	for (int i = 0; i < size; i++) pArr[i] = new Point[size];
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
+	for (int i = 0; i <= size; i++) pArr[i] = new Point[size];
+	for (int i = 0; i <= size; i++)
+		for (int j = 0; j <= size; j++)
 			pArr[i][j] = board.pArr[i][j];
 }
 
 Board::~Board()
 {
 
-	for (int i = 0; i < size; i++) delete[] pArr[i];
+	for (int i = 0; i <= size; i++) delete[] pArr[i];
 	delete[] pArr;
 }
 
@@ -93,8 +93,9 @@ string Player::GetName() { return name; }
 void Player::SetName(string value) { name = value; }
 void Player::Input()
 {
-	fflush(stdin);
-	getline(cin, name);
+	/*getline(cin, name);
+	fflush(stdin);*/
+	cin >> name;
 	// nhap mot ten moi thi dat so tran thang, thua, hoa ve bang 0
 	win = 0;
 	lose = 0;
@@ -117,7 +118,6 @@ Game::Game(int pSize)
     board = new Board(pSize);
     exit = false;
 	turn = true;
-    command = -1; // Gan luot va phim mac dinh
     wongame = false;
     playerwon = 0;
     user1.SetLose(0);
@@ -126,7 +126,6 @@ Game::Game(int pSize)
     user2.SetLose(0);
     user2.SetWin(0);
     user2.SetDraw(0);
-	option = 0;
 }
 
 Game::~Game() { delete board; }
@@ -136,7 +135,6 @@ void Game::Init(int pSize)
 	board = new Board(pSize);
 	exit = false;
 	turn = true;
-	command = -1; // Gan luot va phim mac dinh
 	wongame = false;
 	playerwon = 0;
 	user1.SetLose(0);
@@ -145,18 +143,23 @@ void Game::Init(int pSize)
 	user2.SetLose(0);
 	user2.SetWin(0);
 	user2.SetDraw(0);
-	option = 0;
 }
 
 Player& Game::GetUser1() { return user1; }
 Player& Game::GetUser2() { return user2; }
+void Game::SetUser1(Player value)
+{
+	user1 = value;
+}
+void Game::SetUser2(Player value)
+{
+	user2 = value;
+}
 void Game::SetTurn(bool value) { turn = value; }
 bool Game::GetTurn() { return turn; }
 Board* Game::GetBoard() { return board; }
 void Game::SetExit(bool value) { exit = value; }
 bool Game::GetExit() { return exit; }
-void Game::SetOption(char value) { option = value; }
-char Game::GetOption() { return option; }
 
 bool Game::isWonGame()
 {
@@ -174,11 +177,17 @@ void Game::SetPlayerWon(int value)
 {
     playerwon = value;
 }
-int Game::getCommand() { return command; }
-char Game::waitKeyBoard()
-{
-	if (_kbhit()) command = toupper(_getch());
-	else command = NULL;
-	return command;
+void Game::SaveMove(int col, int row, int value) {
+	Move temp;
+	temp.col = col;
+	temp.row = row;
+	temp.value = value;
+	replayMoves.push_back(temp);
 }
-
+list<Move> Game::GetReplayMoves()
+{
+	return replayMoves;
+}
+void Game::ResetReplayMoves() {
+	replayMoves.clear();
+}

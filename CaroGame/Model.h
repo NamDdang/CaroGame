@@ -3,6 +3,7 @@
 #include "Common.h"
 #include <iostream>
 #include <string>
+#include <list>
 using namespace std;
 namespace Model
 {
@@ -63,6 +64,9 @@ namespace Model
 		void IncreDraw();
 	};
 	// Game
+	struct Move {
+		int col, row, value;
+	};
 	class Game
 	{
 	private:
@@ -70,32 +74,31 @@ namespace Model
 		Player user2;
 		Board* board;// mot ban co
 		bool turn;// luot choi: true luot nguoi mot & false luot nguoi hai
-		int command; // phim go tu nguoi dung
 		bool exit; // Bien quyet dinh thoat game hay khong
-		char option;
 		bool wongame; // Bien kiem tra game da co nguoi thang hay chua
 		int playerwon; // Luu nguoi thang game
-
+		list<Move> replayMoves; // Luu nuoc di nguoi choi nhap
 	public:
 		Game(int);
 		~Game();
 		void Init(int);
-		int getCommand();
-		char waitKeyBoard();
 
 		Player& GetUser1();
 		Player& GetUser2();
+		void SetUser1(Player);
+		void SetUser2(Player);
 		void SetTurn(bool);
 		bool GetTurn();
 		Board* GetBoard();
 		void SetExit(bool);
 		bool GetExit();
-		void SetOption(char);
-		char GetOption();
 		bool isWonGame();
 		void SetWonGame(bool);
 		int GetPlayerWon();
 		void SetPlayerWon(int);
+		void SaveMove(int, int, int);
+		list<Move> GetReplayMoves();
+		void ResetReplayMoves();
 	};
 }
 #endif // MODEL_H

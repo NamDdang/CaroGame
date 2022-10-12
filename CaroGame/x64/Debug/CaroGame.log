@@ -1,2 +1,7 @@
-﻿  Model.cpp
+﻿  Controller.cpp
+  Model.cpp
+  SaveDataToFile.cpp
+  View.cpp
+  main.cpp
+  Generating Code...
   CaroGame.vcxproj -> D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\x64\Debug\CaroGame.exe

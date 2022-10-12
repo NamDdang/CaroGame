@@ -15,8 +15,6 @@ namespace Controller
 	public:
 		GameController(Game*, GameView*);
 		// Store, Get Data
-		int getCommand();
-
 		Model::Player& GetUser1();
 		Model::Player& GetUser2();
 		void SetTurn(bool);
@@ -24,16 +22,20 @@ namespace Controller
 		Board* GetBoard();
 		void SetExit(bool);
 		bool GetExit();
-		void SetOption(char);
-		char GetOption();
 		bool isWonGame();
 		void SetWonGame(bool);
 		int GetPlayerWon();
 		void SetPlayerWon(int);
+		void SaveMove(int, int, int);
+		void ResetReplayMoves();
 		// View
 		void DrawBoard();
 		void DrawGameScreen();
 		// Controller
+		void InitGame(int);
+		bool isContinue();
+		void exitGame(); // Ham thoat game
+
 		void ResetBoard();
 		bool CheckFullBoard();
 		bool HoriWin(int, int);
@@ -41,24 +43,29 @@ namespace Controller
 		bool LCrossWin(int, int);
 		bool RCrossWin(int, int);
 
-		bool isContinue();
-		char waitKeyBoard(); // Ham nhan phim tu nguoi dung
-		char askContinue();
-		void exitGame(); // Ham thoat game
-		void InputOption();
-
 		void CheckWinGame();
 		void UpdateWinLoseRecord();
 		void UpdateDrawRecord();
+		void ReplayLastGame();
+		void ReplayGameById(char);
 		void PlayerInputAccount();
 		void PlayerChooseAccount();
 		void PlayerInputMove();
 		void ChangePlayer();
 		void PlayInBoard();
-		void NewGame();
-		void StartGame(string);
+		void ResetGame();
 
-		void InitGame(int);
+		void MainMenu();
+		void PlayWithOtherPlayer();
+		void GameOverMenu();
+		void AskToSaveReplay();
+		void Replay();
+		void PlayerInformationMenu();
+		void ShowAllPlayer();
+		void SearchPlayerByName();
+		void Guide();
+
+		void StartGame();
 	};
 	// Point Controller
 	class PointController

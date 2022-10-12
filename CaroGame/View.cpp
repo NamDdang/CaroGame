@@ -84,11 +84,39 @@ void GameView::DrawGameScreen(Game* game)
     prompt(": \n", YELLOW);
     DrawBoard(game->GetBoard());
 }
-void GameView::MainMenu()
+void GameView::MenuHeader(int header)
 {
     prompt("*-------", YELLOW);
-    prompt("MAIN MENU", WHITE);
+    switch (header)
+    {
+    case MAIN_MENU:
+        prompt("MAIN MENU", WHITE);
+        break;
+    case PLAY_WITH_OTHER:
+        prompt("Play with other", WHITE);
+        break;
+    case REPLAY:
+        prompt("Replay", WHITE);
+        break;
+    case PLAYER_INFORMATION:
+        prompt("Players's Information", WHITE);
+        break;
+    case SHOW_ALL_PLAYER:
+        prompt("Players's Records", WHITE);
+        break;
+    case SEARCH_PLAYER_BY_NAME:
+        prompt("Search Player by Name", WHITE);
+        break;
+    case GUIDE:
+        prompt("Guide", WHITE);
+        break;
+    default:
+        break;
+    }
     prompt("-------*\n", YELLOW);
+}
+void GameView::MainMenu()
+{
     prompt("1.New ", RED);
     prompt("game \n", WHITE);
     prompt("2.Replay\n", RED);
@@ -98,11 +126,62 @@ void GameView::MainMenu()
     prompt("5.Exit\n", RED);
     prompt("Press number to choice:", WHITE);
 }
+void GameView::GameOverMenu()
+{
+    prompt("Do you want to play again?\n", YELLOW);
+    prompt("1.Play ", RED);
+    prompt("again\n", WHITE);
+    prompt("2.Back ", RED);
+    prompt("to MAIN MENU\n", WHITE);
+    prompt("Press number to choice:", WHITE);
+}
+void GameView::AskToSaveReplay()
+{
+    prompt("Do you want to save replay?\n", YELLOW);
+    prompt("1.Yes\n", WHITE);
+    prompt("2.No\n", WHITE);
+    prompt("Press number to choice:", WHITE);
+}
+void GameView::Replay()
+{
+    prompt("1.Replay ", RED);
+    prompt("again\n", WHITE);
+    prompt("2.Choose ", RED);
+    prompt("another replay\n", WHITE);
+    prompt("3.Back ", RED);
+    prompt("to MAIN MENU\n", WHITE);
+    prompt("Press number to choice:", WHITE);
+}
+void GameView::PlayerInfomationMenu()
+{
+    prompt("1.Show ", RED);
+    prompt("All Player\n", WHITE);
+    prompt("2.Search ", RED);
+    prompt("player by Name\n", WHITE);
+    prompt("3.Back ", RED);
+    prompt("to MAIN MENU\n", WHITE);
+    prompt("Press number to choice:", WHITE);
+}
+void GameView::ShowAllPlayer()
+{
+    prompt("1.Back ", RED);
+    prompt("to Player's Infomation\n", WHITE);
+    prompt("2.Back ", RED);
+    prompt("to MAIN MENU\n", WHITE);
+    prompt("Press number to choice:", WHITE);
+}
+void GameView::SearchPlayerByName()
+{
+    prompt("1.Continue ", RED);
+    prompt("Search\n", WHITE);
+    prompt("2.Back ", RED);
+    prompt("to Player's Infomation\n", WHITE);
+    prompt("3.Back ", RED);
+    prompt("to MAIN MENU\n", WHITE);
+    prompt("Press number to choice:", WHITE);
+}
 void GameView::Guide()
 {
-    prompt("*-------", YELLOW);
-    prompt("Guide", WHITE);
-    prompt("-------*\n", YELLOW);
     SetColor(WHITE);
     prompt("*Trong qua trinh choi, ban lan luot nhap toa do vi tri muon danh = (so dong, so cot)\n");
     prompt("*Ban khong duoc nhap vao vi tri da duoc danh dau hoac ngoai pham vi ban co, neu nhap sai se phai nhap lai\n");
@@ -114,4 +193,7 @@ void GameView::Guide()
     prompt("*Neu ma tat ca cac o bi danh dau het ma chua co nguoi thang thi 2 nguoi choi se hoa nhau\n");
     prompt("*Tro choi se chi dung lai khi mot trong hai nguoi choi thang hoac ca hai hoa nhau\n");
     prompt("*Thank you! Chuc ban choi vui(^_^)\n");
+    prompt("1.Back ", RED);
+    prompt("to MAIN MENU\n", WHITE);
+    prompt("Press number to choice:", WHITE);
 }

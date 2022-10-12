@@ -12,6 +12,6 @@ int main()
     Game* game = new Game(BOARD_SIZE);
     GameView* view = new GameView;
     GameController* controller = new GameController(game, view);
-    controller->StartGame("");
+    controller->StartGame();
     return 0;
 }
