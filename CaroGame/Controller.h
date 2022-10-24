@@ -4,6 +4,9 @@
 #include "View.h"
 using namespace Model;
 using namespace View;
+#define SERVER 0
+#define CLIENT 1
+#define PORT 54001
 namespace Controller
 {
 	// Game Controller
@@ -64,6 +67,10 @@ namespace Controller
 		void ShowAllPlayer();
 		void SearchPlayerByName();
 		void Guide();
+		void PlayOnline();
+		void PlayOnlineServer();
+		void PlayOnlineClient();
+		void GameOverMenuOnline(int);
 
 		void StartGame();
 	};

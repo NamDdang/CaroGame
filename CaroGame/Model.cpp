@@ -1,5 +1,5 @@
-#include "Model.h"
-
+﻿#include "Model.h"
+#include <conio.h>
 using namespace Model;
 // Point
 Point::Point() { x = y = check = 0; }
@@ -87,15 +87,39 @@ int Board::GetXO(int x, int y)
 {
 	return pArr[x][y].getCheck();
 }
-
 // Player
 string Player::GetName() { return name; }
 void Player::SetName(string value) { name = value; }
+char* InputPlayerName(const int k)
+{
+	char* kq = new char[k + 1]; // tao mang
+	int n, index = 0;
+	do
+	{
+	loop:;
+		n = _getch(); // lay ma ASCII
+		// Neu thuoc 0-9, A-Z, a-z hoac dau '.' va chuoi đang co it hon k ky tu thi cho phep
+		if (((n >= '0' && n <= '9') || (n >= 'A' && n <= 'Z') || (n >= 'a' && n <= 'z') || n == '.') && index < k)
+		{
+			cout << char(n); // xuat ky tu do ra man hinh
+			kq[index++] = n; // Luu vao mang
+		}
+		else if (n == '\b' && index > 0) // Neu nhan dau BackSpace ma chuoi khong rong
+		{
+			cout << "\b \b"; // Xoa 1 ky tu tren man hinh
+			kq[--index] = 0; // Xoa 1 ky tu trong chuoi kq
+		}
+		if (n == 13 && index == 0) goto loop; // Neu nhan Enter ma chua nhap gi thi khong cho phep
+	} while (n != 13); // Cu lap lai trong khi chua nhap Enter
+
+	kq[index] = 0; // Ket thuc chuoi
+	cout << '\n';
+	return kq;
+}
 void Player::Input()
 {
-	/*getline(cin, name);
-	fflush(stdin);*/
-	cin >> name;
+	name = InputPlayerName(8);
+
 	// nhap mot ten moi thi dat so tran thang, thua, hoa ve bang 0
 	win = 0;
 	lose = 0;

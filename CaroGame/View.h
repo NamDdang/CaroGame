@@ -9,7 +9,8 @@ using namespace Model;
 #define PLAYER_INFORMATION 3
 #define SHOW_ALL_PLAYER 4
 #define SEARCH_PLAYER_BY_NAME 5
-#define GUIDE 6
+#define PLAY_ONLINE 6
+#define GUIDE 7
 namespace View
 {
 	// Game View
@@ -29,6 +30,7 @@ namespace View
 		void ShowAllPlayer();
 		void SearchPlayerByName();
 		void Guide();
+		void PlayOnline();
 	};
 }
 #endif // VIEW_H

@@ -155,6 +155,7 @@ void updateCurrentResult(Player& player)
     {
         getline(fin, charsInLine);
         fin >> namePlayer >> numWin >> numLose >> numDraw;
+
         if (player.GetName() == namePlayer)
         {
             player.SetWin(numWin);
@@ -246,7 +247,7 @@ list<Move> getReplayMoveById(char id)
     {
         getline(fin, charsInLine);
         fin >> idGame;
-        if (idGame == id)
+        if (idGame == id && idGame != '-')
         { 
             do
             {

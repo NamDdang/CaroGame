@@ -110,6 +110,9 @@ void GameView::MenuHeader(int header)
     case GUIDE:
         prompt("Guide", WHITE);
         break;
+    case PLAY_ONLINE:
+        prompt("Play online", WHITE);
+        break;
     default:
         break;
     }
@@ -122,8 +125,10 @@ void GameView::MainMenu()
     prompt("2.Replay\n", RED);
     prompt("3.Players' ", RED);
     prompt("Information\n", WHITE);
-    prompt("4.Guide\n", RED);
-    prompt("5.Exit\n", RED);
+    prompt("4.Play ", RED);
+    prompt("online\n", WHITE);
+    prompt("5.Guide\n", RED);
+    prompt("6.Exit\n", RED);
     prompt("Press number to choice:", WHITE);
 }
 void GameView::GameOverMenu()
@@ -194,6 +199,16 @@ void GameView::Guide()
     prompt("*Tro choi se chi dung lai khi mot trong hai nguoi choi thang hoac ca hai hoa nhau\n");
     prompt("*Thank you! Chuc ban choi vui(^_^)\n");
     prompt("1.Back ", RED);
+    prompt("to MAIN MENU\n", WHITE);
+    prompt("Press number to choice:", WHITE);
+}
+void GameView::PlayOnline()
+{
+    prompt("1.Play ", RED);
+    prompt("as Server\n", WHITE);
+    prompt("2.Play ", RED);
+    prompt("as Client\n", WHITE);
+    prompt("3.Back ", RED);
     prompt("to MAIN MENU\n", WHITE);
     prompt("Press number to choice:", WHITE);
 }

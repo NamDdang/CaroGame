@@ -1,9 +1,6 @@
-﻿  Board.cpp
-  Common.cpp
-  Game.cpp
+﻿  Controller.cpp
+D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Controller.cpp(678,23): warning C4018: '<': signed/unsigned mismatch
+D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\CaroGame\Controller.cpp(869,23): warning C4018: '<': signed/unsigned mismatch
   main.cpp
-  Player.cpp
-  Point.cpp
-  SaveDataToFile.cpp
   Generating Code...
   CaroGame.vcxproj -> D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\Debug\CaroGame.exe

@@ -1,6 +1,9 @@
 #include "Controller.h"
 #include "SaveDataToFile.h"
-#include <Windows.h>
+//#include <Windows.h>
+#include <WS2tcpip.h>
+#pragma comment (lib, "ws2_32.lib")
+
 using namespace Controller;
 // Game Controller
 GameController::GameController(Game* model, GameView* view)
@@ -19,19 +22,19 @@ bool GameController::GetExit() { return model->GetExit(); }
 
 bool GameController::isWonGame()
 {
-	return model->isWonGame();
+    return model->isWonGame();
 }
 void GameController::SetWonGame(bool value)
 {
-	model->SetWonGame(value);
+    model->SetWonGame(value);
 }
 int GameController::GetPlayerWon()
 {
-	return model->GetPlayerWon();
+    return model->GetPlayerWon();
 }
 void GameController::SetPlayerWon(int value)
 {
-	model->SetPlayerWon(value);
+    model->SetPlayerWon(value);
 }
 
 void GameController::InitGame(int pSize)
@@ -299,6 +302,13 @@ void GameController::PlayerInputAccount()
     updateCurrentResult(model->GetUser1());
     view->prompt("Input player 2: ");
     model->GetUser2().Input();
+    while (model->GetUser2().GetName() == model->GetUser1().GetName())
+    {
+        view->prompt("Same name as player 1\n", RED);
+        SetColor(WHITE);
+        view->prompt("Input player 2: ");
+        model->GetUser2().Input();
+    }
     if (checkPlayerName(model->GetUser2().GetName()) == 0)
     {
         writePlayerInFile(model->GetUser2());
@@ -397,9 +407,12 @@ void GameController::MainMenu()
             PlayerInformationMenu();
             break;
         case '4':
-            Guide();
+            PlayOnline();
             break;
         case '5':
+            Guide();
+            break;
+        case '6':
             exitGame();
             break;
         default:
@@ -632,6 +645,447 @@ void GameController::Guide()
             break;
         }
     } while (key != '1');
+}
+void GameController::PlayOnline()
+{
+    char key;
+    do
+    {
+        system("cls");
+        view->MenuHeader(PLAY_ONLINE);
+        view->PlayOnline();
+        cin >> key;
+        switch (key)
+        {
+        case '1':
+            PlayOnlineServer();
+            break;
+        case '2':
+            PlayOnlineClient();
+            break;
+        case '3':
+            MainMenu();
+            break;
+        default:
+            break;
+        }
+    } while (key < '1' || key > '3');
+}
+void assignMove(string s, char& col, char& row)
+{
+    string assign;
+    int count = 0;
+    for (int i = 0; i < s.size(); i++)
+    {
+        if (s[i] != ',')
+        {
+            assign += s[i];
+        }
+        else
+        {
+            if (count == 0)
+            {
+                col = stoi(assign);
+                assign = "";
+                count++;
+            }
+            else if (count == 1)
+            {
+                row = stoi(assign);
+                assign = "";
+            }
+        }
+    }
+}
+void GameController::PlayOnlineServer()
+{
+    // Nhap ten player 1
+    system("cls");
+    SetColor(15);
+    view->prompt("List Account: \n", YELLOW);
+    SetColor(WHITE);
+    showAllRecordInFile();
+    view->prompt("Input name account you want to play or create new account:\n");
+    view->prompt("Input player's name: ");
+    model->GetUser1().Input();
+    if (checkPlayerName(model->GetUser1().GetName()) == 0)
+    {
+        writePlayerInFile(model->GetUser1());
+    }
+    updateCurrentResult(model->GetUser1());
+    WSADATA wsData;
+    WORD ver = MAKEWORD(2, 2);
+
+    int wsOk = WSAStartup(ver, &wsData);
+    if (wsOk != 0)
+    {
+        cerr << "Can't Initialize winsock! Quitting" << endl;
+        return;
+    }
+
+    // Create a socket
+    SOCKET listening = socket(AF_INET, SOCK_STREAM, 0);
+    if (listening == INVALID_SOCKET)
+    {
+        cerr << "Can't create a socket! Quitting" << endl;
+        return;
+    }
+
+    // Bind the ip address and port to a socket
+    sockaddr_in hint;
+    hint.sin_family = AF_INET;
+    hint.sin_port = htons(PORT);
+    hint.sin_addr.S_un.S_addr = INADDR_ANY; // Could also use inet_pton .... 
+
+    bind(listening, (sockaddr*)&hint, sizeof(hint));
+
+    // Tell Winsock the socket is for listening 
+    listen(listening, SOMAXCONN);
+
+    // Wait for a connection
+    sockaddr_in client;
+    int clientSize = sizeof(client);
+    SOCKET clientSocket = accept(listening, (sockaddr*)&client, &clientSize);
+    int connResult = connect(clientSocket, (sockaddr*)&hint, sizeof(hint));
+
+    char host[NI_MAXHOST];		// Client's remote name
+    char service[NI_MAXSERV];	// Service (i.e. port) the client is connect on
+
+    ZeroMemory(host, NI_MAXHOST); // same as memset(host, 0, NI_MAXHOST);
+    ZeroMemory(service, NI_MAXSERV);
+    if (getnameinfo((sockaddr*)&client, sizeof(client), host, NI_MAXHOST, service, NI_MAXSERV, 0) == 0)
+    {
+        cout << host << " connected on port " << service << endl;
+    }
+    else
+    {
+        inet_ntop(AF_INET, &client.sin_addr, host, NI_MAXHOST);
+        cout << host << " connected on port " <<
+            ntohs(client.sin_port) << endl;
+    }
+
+    // Close listening socket
+    closesocket(listening);
+
+    //While loop: accept and echo message back to client
+    string user1Name, user2Name, user1Move, user2Move;
+    char buffer[4096];
+    user1Name = model->GetUser1().GetName();
+    int sendResult = send(clientSocket, user1Name.c_str(), user1Name.size() + 1, 0);
+    ZeroMemory(buffer, 4096);
+    int bytesReceived = recv(clientSocket, buffer, 4096, 0);
+    user2Name = string(buffer, 0, bytesReceived);
+    // Nhan ten play 2
+    model->GetUser2().SetName(user2Name);
+    model->GetUser2().SetWin(0);
+    model->GetUser2().SetLose(0);
+    model->GetUser2().SetDraw(0);
+    if (checkPlayerName(model->GetUser2().GetName()) == 0)
+    {
+        writePlayerInFile(model->GetUser2());
+    }
+    updateCurrentResult(model->GetUser2());
+    ResetReplayMoves();
+    do
+    {
+        if (isWonGame() == false)
+        {
+            system("cls");
+            DrawGameScreen();
+            if (CheckFullBoard())
+            {
+                UpdateDrawRecord();
+                view->prompt("DRAW!\n", YELLOW);
+                AskToSaveReplay();
+            }
+            else
+            {
+                // Player Input Move
+                char charCol, charRow; // ky tu nguoi choi nhap
+                int inputCol = -1, inputRow = -1; // chi so hang, cot nguoi choi nhap
+                if (GetTurn() == true)
+                {
+                    view->prompt("Player ", WHITE);
+                    view->prompt(model->GetUser1().GetName() + "'s ", P1);
+                    view->prompt("turn", WHITE);
+                    view->prompt(": ", YELLOW);
+                    do
+                    {
+                        cin >> charRow;
+                        cin >> charCol;
+                        inputRow = (int)charRow - 48;
+                        inputCol = (int)charCol - 48;
+                    } while (inputCol < 0 || inputCol > model->GetBoard()->getSize() - 1 || inputRow < 0 || inputRow > model->GetBoard()->getSize() - 1 || model->GetBoard()->GetXO(inputCol, inputRow) != 0);
+                    model->GetBoard()->SetXO(inputCol, inputRow, VX);
+                    SaveMove(inputCol, inputRow, VX);
+                    user1Move = to_string(charCol) + "," + to_string(charRow) + ",";
+                    int sendResult = send(clientSocket, user1Move.c_str(), user1Move.size() + 1, 0);
+                }
+                if (GetTurn() == false)
+                {
+                    ZeroMemory(buffer, 4096);
+                    int bytesReceived = recv(clientSocket, buffer, 4096, 0);
+                    user2Move = string(buffer, 0, bytesReceived);
+                    // Nhan nuoc di cua Player 2
+                    assignMove(user2Move, charCol, charRow);
+                    inputRow = (int)charRow - 48;
+                    inputCol = (int)charCol - 48;
+                    model->GetBoard()->SetXO(inputCol, inputRow, VO);
+                    SaveMove(inputCol, inputRow, VO);
+                }
+                ChangePlayer();
+                CheckWinGame();
+            }
+        }
+        if (isWonGame() == true)
+        {
+            UpdateWinLoseRecord();
+            system("cls");
+            DrawGameScreen();
+            view->prompt("Player ", WHITE);
+            if (GetPlayerWon() == VX)
+            {
+                view->prompt(model->GetUser1().GetName(), P1);
+            }
+            else if (GetPlayerWon() == VO)
+            {
+                view->prompt(model->GetUser2().GetName(), P2);
+            }
+            view->prompt(" won!\n", YELLOW);
+            AskToSaveReplay();
+        }
+    } while (isWonGame() == false);
+
+    // Close the socket
+    closesocket(clientSocket);
+
+    // Cleanup winsock
+    WSACleanup();
+    GameOverMenuOnline(SERVER);
+}
+bool isIPAddress(string ip)
+{
+    int count = 0;
+    for (int i = 0; i < ip.size(); i++)
+    {
+        if ((ip[i] < '0' || ip[i] > '9') && ip[i] != '.')
+        {
+            return false;
+        }
+        if (ip[i] == '.')
+        {
+            count++;
+            if (i == 0) return false;
+            if (i >= 1 && ip[i - 1] == '.') return false;
+            if (i == 2 && ip[i - 2] == '0') return false;
+            if (i >= 3 && ip[i - 1] == '0' && ip[i - 2] == '0' && ip[i - 3] != '1' && ip[i - 3] != '2') return false;
+            if (i >= 3 && ip[i - 1] >= '6' && ip[i - 1] <= '9' && ip[i - 2] == '5' && ip[i - 3] == '2') return false;
+            if (i >= 3 && ip[i - 2] >= '6' && ip[i - 2] <= '9' && ip[i - 3] == '2') return false;
+            if (i >= 4 && ip[i - 1] != '.' && ip[i - 2] != '.' && ip[i - 3] != '.' && ip[i - 4] != '.') return false;
+        }
+        if (count > 0) // Tranh truy cap ra ngoai mang string
+        {
+            if (i == ip.size() - 1)
+            {
+                if (ip[i] == '.') return false;
+                if (ip[i] == '0' && ip[i - 1] == '0' && ip[i - 2] != '1' && ip[i - 2] != '2') return false;
+                if (ip[i] >= '6' && ip[i] <= '9' && ip[i - 1] == '5' && ip[i - 2] == '2') return false;
+                if (ip[i - 1] >= '6' && ip[i - 1] <= '9' && ip[i - 2] == '2') return false;
+                if (ip[i] != '.' && ip[i - 1] != '.' && ip[i - 2] != '.' && ip[i - 3] != '.') return false;
+            }
+        }
+    }
+    if (count != 3) return false;
+    return true;
+}
+void GameController::PlayOnlineClient()
+{
+    string ipAddress;			            // IP Address of the server
+    int port = PORT;						// Listening port # on the server
+    view->prompt("(Input \"localhost\" if server is working on your PC)\n", YELLOW);
+    do
+    {
+        view->prompt("Input server's ip address: ", WHITE);
+        cin >> ipAddress;
+        if (ipAddress == "localhost") ipAddress = "127.0.0.1";
+        if (!isIPAddress(ipAddress))
+        {
+            view->prompt("Invalid ip address.\n", YELLOW);
+        }
+    } while (!isIPAddress(ipAddress));
+    
+    // Initialize WinSock
+    WSAData data;
+    WORD ver = MAKEWORD(2, 2);
+    int wsResult = WSAStartup(ver, &data);
+    if (wsResult != 0)
+    {
+        cerr << "Can't start Winsock, Err #" << wsResult << endl;
+        return;
+    }
+
+    // Create socket
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock == INVALID_SOCKET)
+    {
+        cerr << "Can't create socket, Err #" << WSAGetLastError() << endl;
+        WSACleanup();
+        return;
+    }
+
+    // Fill in a hint structure
+    sockaddr_in hint;
+    hint.sin_family = AF_INET;
+    hint.sin_port = htons(port);
+    inet_pton(AF_INET, ipAddress.c_str(), &hint.sin_addr);
+    // Connect to server
+    int connResult = connect(sock, (sockaddr*)&hint, sizeof(hint));
+    if (connResult == SOCKET_ERROR)
+    {
+        cerr << "Can't connect to server, Err #" << WSAGetLastError() << endl;
+        closesocket(sock);
+        WSACleanup();
+        //delay
+        Sleep(1000);
+        PlayOnline();
+        return;
+    }
+
+    // Do-while loop to send and receive data
+    string user1Name, user2Name, user1Move, user2Move;
+    char buffer[4096];
+    ZeroMemory(buffer, 4096);
+    int bytesReceived = recv(sock, buffer, 4096, 0);
+    user1Name = string(buffer, 0, bytesReceived);
+    model->GetUser1().SetName(user1Name);
+    model->GetUser1().SetWin(0);
+    model->GetUser1().SetLose(0);
+    model->GetUser1().SetDraw(0);
+    if (checkPlayerName(model->GetUser1().GetName()) == 0)
+    {
+        writePlayerInFile(model->GetUser1());
+    }
+    updateCurrentResult(model->GetUser1());
+
+    system("cls");
+    SetColor(15);
+    view->prompt("List Account: \n", YELLOW);
+    SetColor(WHITE);
+    showAllRecordInFile();
+    view->prompt("Input name account you want to play or create new account:\n");
+    view->prompt("Input player's name: ");
+    model->GetUser2().Input();
+    while (model->GetUser2().GetName() == model->GetUser1().GetName())
+    {
+        view->prompt("Same name as your opponent\n", RED);
+        SetColor(WHITE);
+        view->prompt("Input player's name: ");
+        model->GetUser2().Input();
+    }
+    if (checkPlayerName(model->GetUser2().GetName()) == 0)
+    {
+        writePlayerInFile(model->GetUser2());
+    }
+    updateCurrentResult(model->GetUser2());
+    user2Name = model->GetUser2().GetName();
+    int sendResult = send(sock, user2Name.c_str(), user2Name.size() + 1, 0);
+    ResetReplayMoves();
+    do
+    {
+        // Prompt the user for some text
+        if (isWonGame() == false)
+        {
+            system("cls");
+            DrawGameScreen();
+            if (CheckFullBoard())
+            {
+                UpdateDrawRecord();
+                view->prompt("DRAW!\n", YELLOW);
+                AskToSaveReplay();
+            }
+            else
+            {
+                // Player Input Move
+                char charCol, charRow; // ky tu nguoi choi nhap
+                int inputCol = -1, inputRow = -1; // chi so hang, cot nguoi choi nhap
+                if (GetTurn() == true)
+                {
+                    int bytesReceived = recv(sock, buffer, 4096, 0);
+                    user1Move = string(buffer, 0, bytesReceived);
+                    assignMove(user1Move, charCol, charRow);
+                    inputRow = (int)charRow - 48;
+                    inputCol = (int)charCol - 48;
+                    model->GetBoard()->SetXO(inputCol, inputRow, VX);
+                    SaveMove(inputCol, inputRow, VX);
+                }
+                if (GetTurn() == false)
+                {
+                    view->prompt("Player ", WHITE);
+                    view->prompt(model->GetUser2().GetName() + "'s ", P2);
+                    view->prompt("turn", WHITE);
+                    view->prompt(": ", YELLOW);
+                    do
+                    {
+                        cin >> charRow;
+                        cin >> charCol;
+                        inputRow = (int)charRow - 48;
+                        inputCol = (int)charCol - 48;
+                    } while (inputCol < 0 || inputCol > model->GetBoard()->getSize() - 1 || inputRow < 0 || inputRow > model->GetBoard()->getSize() - 1 || model->GetBoard()->GetXO(inputCol, inputRow) != 0);
+                    model->GetBoard()->SetXO(inputCol, inputRow, VO);
+                    SaveMove(inputCol, inputRow, VO);
+                    user2Move = to_string(charCol) + "," + to_string(charRow) + ",";
+                    sendResult = send(sock, user2Move.c_str(), user2Move.size() + 1, 0);
+                }
+                ChangePlayer();
+                CheckWinGame();
+            }
+        }
+        if (isWonGame() == true)
+        {
+            UpdateWinLoseRecord();
+            system("cls");
+            DrawGameScreen();
+            view->prompt("Player ", WHITE);
+            if (GetPlayerWon() == VX)
+            {
+                view->prompt(model->GetUser1().GetName(), P1);
+            }
+            else if (GetPlayerWon() == VO)
+            {
+                view->prompt(model->GetUser2().GetName(), P2);
+            }
+            view->prompt(" won!\n", YELLOW);
+            AskToSaveReplay();
+        }
+    } while (isWonGame() == false);
+
+    // Gracefully close down everything
+    closesocket(sock);
+    GameOverMenuOnline(CLIENT);
+}
+void GameController::GameOverMenuOnline(int SoC)
+{
+    char key;
+    view->GameOverMenu();
+    do
+    {
+        cin >> key;
+        switch (key)
+        {
+        case '1':
+            ResetGame();
+            if (SoC == SERVER) PlayOnlineServer();
+            else if(SoC == CLIENT) PlayOnlineClient();
+            break;
+        case '2':
+            ResetGame();
+            MainMenu();
+            break;
+        default:
+            view->prompt("Press again\n");
+            break;
+        }
+    } while (key < '1' || key > '2');
 }
 void GameController::StartGame()
 {
