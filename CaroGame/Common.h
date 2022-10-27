@@ -26,4 +26,6 @@ using namespace std;
 #define P1 RED 
 #define P2 BLUE 
 void SetColor(int ForgC);
+char* InputStringName(const int k);
+bool isIPAddress(string ip);
 #endif // COMMON_H

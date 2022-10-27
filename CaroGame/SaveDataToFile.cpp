@@ -27,6 +27,7 @@ void createRecordFile()
 
 void writePlayerInFile(Player player)
 {
+    if (!is_file_exist(recordfile)) { createRecordFile(); }
     ofstream fout;
     fout.open(recordfile, ios::out | ios::app);
     fout << setw(8) << player.GetName();
@@ -195,6 +196,7 @@ bool checkGameId(char id)
 }
 void saveReplayInFile(Game* game)
 {
+    if (!is_file_exist(replayfile)) { createReplayFile(); }
     char id = '0';
     char arr[] = "         ";
     string line;
@@ -206,8 +208,8 @@ void saveReplayInFile(Game* game)
         id++;
     }
     f << setw(8) << id;
-    f << setw(12) << game->GetUser1().GetName();
-    f << setw(12) << game->GetUser2().GetName();
+    f << setw(12) << game->GetPlayer1().GetName();
+    f << setw(12) << game->GetPlayer2().GetName();
     f << '\n';
     list<Move>::iterator j;
     Game* replayGame = new Game(game->GetBoard()->getSize());

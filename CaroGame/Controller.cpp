@@ -1,5 +1,6 @@
 #include "Controller.h"
 #include "SaveDataToFile.h"
+#include "MySQLConnect.h"
 //#include <Windows.h>
 #include <WS2tcpip.h>
 #pragma comment (lib, "ws2_32.lib")
@@ -11,9 +12,14 @@ GameController::GameController(Game* model, GameView* view)
     this->model = model;
     this->view = view;
 }
-
-Model::Player& GameController::GetUser1() { return model->GetUser1(); }
-Model::Player& GameController::GetUser2() { return model->GetUser2(); }
+GameController::~GameController()
+{
+    delete model;
+    delete view;
+}
+Model::Player& GameController::GetPlayer1() { return model->GetPlayer1(); }
+Model::Player& GameController::GetPlayer2() { return model->GetPlayer2(); }
+Model::User& GameController::GetUser() { return model->GetUser(); }
 void GameController::SetTurn(bool value) { model->SetTurn(value); }
 bool GameController::GetTurn() { return model->GetTurn(); }
 Board* GameController::GetBoard() { return model->GetBoard(); }
@@ -234,27 +240,27 @@ void GameController::UpdateWinLoseRecord()
 {
     if (GetPlayerWon() == VX)
     {
-        model->GetUser1().IncreWin();
-        model->GetUser2().IncreLose();
+        model->GetPlayer1().IncreWin();
+        model->GetPlayer2().IncreLose();
     }
     else if (GetPlayerWon() == VO)
     {
-        model->GetUser1().IncreLose();
-        model->GetUser2().IncreWin();
+        model->GetPlayer1().IncreLose();
+        model->GetPlayer2().IncreWin();
     }
-    eraseOldResult(model->GetUser1().GetName());
-    writePlayerInFile(model->GetUser1());
-    eraseOldResult(model->GetUser2().GetName());
-    writePlayerInFile(model->GetUser2());
+    eraseOldResult(model->GetPlayer1().GetName());
+    writePlayerInFile(model->GetPlayer1());
+    eraseOldResult(model->GetPlayer2().GetName());
+    writePlayerInFile(model->GetPlayer2());
 }
 void GameController::UpdateDrawRecord()
 {
-    model->GetUser1().IncreDraw();
-    model->GetUser2().IncreDraw();
-    eraseOldResult(model->GetUser1().GetName());
-    writePlayerInFile(model->GetUser1());
-    eraseOldResult(model->GetUser2().GetName());
-    writePlayerInFile(model->GetUser2());
+    model->GetPlayer1().IncreDraw();
+    model->GetPlayer2().IncreDraw();
+    eraseOldResult(model->GetPlayer1().GetName());
+    writePlayerInFile(model->GetPlayer1());
+    eraseOldResult(model->GetPlayer2().GetName());
+    writePlayerInFile(model->GetPlayer2());
 }
 void GameController::ReplayLastGame() {
     list<Move>::iterator i;
@@ -263,8 +269,8 @@ void GameController::ReplayLastGame() {
     i = replayMoves.begin();
     while (i != replayMoves.end()) {
         system("cls");
-        replayGame->SetUser1(model->GetUser1());
-        replayGame->SetUser2(model->GetUser2());
+        replayGame->SetPlayer1(model->GetPlayer1());
+        replayGame->SetPlayer2(model->GetPlayer2());
         replayGame->GetBoard()->SetXO((*i).col, (*i).row, (*i).value);
         view->DrawGameScreen(replayGame);
         //delay
@@ -281,8 +287,8 @@ void GameController::ReplayGameById(char id) {
     i = replayMoves.begin();
     while (i != replayMoves.end()) {
         system("cls");
-        replayGame->GetUser1().SetName(user1);
-        replayGame->GetUser2().SetName(user2);
+        replayGame->GetPlayer1().SetName(user1);
+        replayGame->GetPlayer2().SetName(user2);
         replayGame->GetBoard()->SetXO((*i).col, (*i).row, (*i).value);
         view->DrawGameScreen(replayGame);
         //delay
@@ -292,28 +298,27 @@ void GameController::ReplayGameById(char id) {
 }
 void GameController::PlayerInputAccount()
 {
-    //model->GetUser1().Input();
     view->prompt("Input player 1: ");
-    model->GetUser1().Input();
-    if (checkPlayerName(model->GetUser1().GetName()) == 0)
+    model->GetPlayer1().Input();
+    if (checkPlayerName(model->GetPlayer1().GetName()) == 0)
     {
-        writePlayerInFile(model->GetUser1());
+        writePlayerInFile(model->GetPlayer1());
     }
-    updateCurrentResult(model->GetUser1());
+    updateCurrentResult(model->GetPlayer1());
     view->prompt("Input player 2: ");
-    model->GetUser2().Input();
-    while (model->GetUser2().GetName() == model->GetUser1().GetName())
+    model->GetPlayer2().Input();
+    while (model->GetPlayer2().GetName() == model->GetPlayer1().GetName())
     {
         view->prompt("Same name as player 1\n", RED);
         SetColor(WHITE);
         view->prompt("Input player 2: ");
-        model->GetUser2().Input();
+        model->GetPlayer2().Input();
     }
-    if (checkPlayerName(model->GetUser2().GetName()) == 0)
+    if (checkPlayerName(model->GetPlayer2().GetName()) == 0)
     {
-        writePlayerInFile(model->GetUser2());
+        writePlayerInFile(model->GetPlayer2());
     }
-    updateCurrentResult(model->GetUser2());
+    updateCurrentResult(model->GetPlayer2());
 }
 void GameController::PlayerChooseAccount()
 {
@@ -331,7 +336,7 @@ void GameController::PlayerInputMove()
     if (GetTurn() == true)
     {
         view->prompt("Player ", WHITE);
-        view->prompt(model->GetUser1().GetName() + "'s ", P1);
+        view->prompt(model->GetPlayer1().GetName() + "'s ", P1);
         view->prompt("turn", WHITE);
         view->prompt(": ", YELLOW);
         do
@@ -347,7 +352,7 @@ void GameController::PlayerInputMove()
     if (GetTurn() == false)
     {
         view->prompt("Player ", WHITE);
-        view->prompt(model->GetUser2().GetName() + "'s ", P2);
+        view->prompt(model->GetPlayer2().GetName() + "'s ", P2);
         view->prompt("turn", WHITE);
         view->prompt(": ", YELLOW);
         do
@@ -452,11 +457,11 @@ void GameController::PlayWithOtherPlayer()
             view->prompt("Player ", WHITE);
             if (GetPlayerWon() == VX)
             {
-                view->prompt(model->GetUser1().GetName(), P1);
+                view->prompt(model->GetPlayer1().GetName(), P1);
             }
             else if (GetPlayerWon() == VO)
             {
-                view->prompt(model->GetUser2().GetName(), P2);
+                view->prompt(model->GetPlayer2().GetName(), P2);
             }
             view->prompt(" won!\n", YELLOW);
             AskToSaveReplay();
@@ -658,10 +663,18 @@ void GameController::PlayOnline()
         switch (key)
         {
         case '1':
-            PlayOnlineServer();
+            Login();
+            if (model->GetUser().GetUserName() == "")
+            {
+                key = '2';
+            }
+            else
+            {
+                PlayOnlineAfterLogin();
+            }
             break;
         case '2':
-            PlayOnlineClient();
+            Register();
             break;
         case '3':
             MainMenu();
@@ -669,7 +682,36 @@ void GameController::PlayOnline()
         default:
             break;
         }
-    } while (key < '1' || key > '3');
+    } while (key < '1' || key > '3' || key == '2');
+}
+void GameController::PlayOnlineAfterLogin()
+{
+    char key;
+    do
+    {
+        system("cls");
+        view->MenuHeader(PLAY_ONLINE);
+        view->PlayOnlineAfterLogin();
+        cin >> key;
+        switch (key)
+        {
+        case '1':
+            PlayOnlineServer();
+            break;
+        case '2':
+            PlayOnlineClient();
+            break;
+        case '3':
+            UserInformation();
+            break;
+        case '4':
+            Logout();
+            MainMenu();
+            break;
+        default:
+            break;
+        }
+    } while (key < '1' || key > '4' || key == '3');
 }
 void assignMove(string s, char& col, char& row)
 {
@@ -699,20 +741,15 @@ void assignMove(string s, char& col, char& row)
 }
 void GameController::PlayOnlineServer()
 {
-    // Nhap ten player 1
-    system("cls");
-    SetColor(15);
-    view->prompt("List Account: \n", YELLOW);
-    SetColor(WHITE);
-    showAllRecordInFile();
-    view->prompt("Input name account you want to play or create new account:\n");
-    view->prompt("Input player's name: ");
-    model->GetUser1().Input();
-    if (checkPlayerName(model->GetUser1().GetName()) == 0)
-    {
-        writePlayerInFile(model->GetUser1());
-    }
-    updateCurrentResult(model->GetUser1());
+    // Cap nhat lai user moi khi choi lai game
+    string username = model->GetUser().GetUserName();
+    model->SetUser(GetUserFromDatabase(username));
+    // Dua thong tin user vao player 1
+    model->GetPlayer1().SetName(model->GetUser().GetUserName());
+    model->GetPlayer1().SetWin(model->GetUser().GetWin());
+    model->GetPlayer1().SetLose(model->GetUser().GetLose());
+    model->GetPlayer1().SetDraw(model->GetUser().GetDraw());
+
     WSADATA wsData;
     WORD ver = MAKEWORD(2, 2);
 
@@ -738,16 +775,17 @@ void GameController::PlayOnlineServer()
     hint.sin_addr.S_un.S_addr = INADDR_ANY; // Could also use inet_pton .... 
 
     bind(listening, (sockaddr*)&hint, sizeof(hint));
-
+    
     // Tell Winsock the socket is for listening 
     listen(listening, SOMAXCONN);
+    view->prompt("Wait other player...");
 
     // Wait for a connection
     sockaddr_in client;
     int clientSize = sizeof(client);
     SOCKET clientSocket = accept(listening, (sockaddr*)&client, &clientSize);
     int connResult = connect(clientSocket, (sockaddr*)&hint, sizeof(hint));
-
+    
     char host[NI_MAXHOST];		// Client's remote name
     char service[NI_MAXSERV];	// Service (i.e. port) the client is connect on
 
@@ -768,23 +806,19 @@ void GameController::PlayOnlineServer()
     closesocket(listening);
 
     //While loop: accept and echo message back to client
-    string user1Name, user2Name, user1Move, user2Move;
+    string player1Name, player2Name, player1Move, player2Move;
     char buffer[4096];
-    user1Name = model->GetUser1().GetName();
-    int sendResult = send(clientSocket, user1Name.c_str(), user1Name.size() + 1, 0);
+    player1Name = model->GetPlayer1().GetName();
+    int sendResult = send(clientSocket, player1Name.c_str(), player1Name.size() + 1, 0);
     ZeroMemory(buffer, 4096);
     int bytesReceived = recv(clientSocket, buffer, 4096, 0);
-    user2Name = string(buffer, 0, bytesReceived);
-    // Nhan ten play 2
-    model->GetUser2().SetName(user2Name);
-    model->GetUser2().SetWin(0);
-    model->GetUser2().SetLose(0);
-    model->GetUser2().SetDraw(0);
-    if (checkPlayerName(model->GetUser2().GetName()) == 0)
-    {
-        writePlayerInFile(model->GetUser2());
-    }
-    updateCurrentResult(model->GetUser2());
+    player2Name = string(buffer, 0, bytesReceived);
+    // Nhan ten player 2 tu client
+    model->GetPlayer2().SetName(player2Name);
+    model->GetPlayer2().SetWin(0);
+    model->GetPlayer2().SetLose(0);
+    model->GetPlayer2().SetDraw(0);
+
     ResetReplayMoves();
     do
     {
@@ -792,13 +826,7 @@ void GameController::PlayOnlineServer()
         {
             system("cls");
             DrawGameScreen();
-            if (CheckFullBoard())
-            {
-                UpdateDrawRecord();
-                view->prompt("DRAW!\n", YELLOW);
-                AskToSaveReplay();
-            }
-            else
+            if (CheckFullBoard() == false)
             {
                 // Player Input Move
                 char charCol, charRow; // ky tu nguoi choi nhap
@@ -806,7 +834,7 @@ void GameController::PlayOnlineServer()
                 if (GetTurn() == true)
                 {
                     view->prompt("Player ", WHITE);
-                    view->prompt(model->GetUser1().GetName() + "'s ", P1);
+                    view->prompt(model->GetPlayer1().GetName() + "'s ", P1);
                     view->prompt("turn", WHITE);
                     view->prompt(": ", YELLOW);
                     do
@@ -818,16 +846,16 @@ void GameController::PlayOnlineServer()
                     } while (inputCol < 0 || inputCol > model->GetBoard()->getSize() - 1 || inputRow < 0 || inputRow > model->GetBoard()->getSize() - 1 || model->GetBoard()->GetXO(inputCol, inputRow) != 0);
                     model->GetBoard()->SetXO(inputCol, inputRow, VX);
                     SaveMove(inputCol, inputRow, VX);
-                    user1Move = to_string(charCol) + "," + to_string(charRow) + ",";
-                    int sendResult = send(clientSocket, user1Move.c_str(), user1Move.size() + 1, 0);
+                    player1Move = to_string(charCol) + "," + to_string(charRow) + ",";
+                    int sendResult = send(clientSocket, player1Move.c_str(), player1Move.size() + 1, 0);
                 }
                 if (GetTurn() == false)
                 {
                     ZeroMemory(buffer, 4096);
                     int bytesReceived = recv(clientSocket, buffer, 4096, 0);
-                    user2Move = string(buffer, 0, bytesReceived);
-                    // Nhan nuoc di cua Player 2
-                    assignMove(user2Move, charCol, charRow);
+                    player2Move = string(buffer, 0, bytesReceived);
+                    // Nhan nuoc di cua Player 2 tu client
+                    assignMove(player2Move, charCol, charRow);
                     inputRow = (int)charRow - 48;
                     inputCol = (int)charCol - 48;
                     model->GetBoard()->SetXO(inputCol, inputRow, VO);
@@ -839,23 +867,30 @@ void GameController::PlayOnlineServer()
         }
         if (isWonGame() == true)
         {
-            UpdateWinLoseRecord();
+            UpdateUserInDatabase(SERVER);
+            InsertMatchToDatabase();
             system("cls");
             DrawGameScreen();
             view->prompt("Player ", WHITE);
             if (GetPlayerWon() == VX)
             {
-                view->prompt(model->GetUser1().GetName(), P1);
+                view->prompt(model->GetPlayer1().GetName(), P1);
             }
             else if (GetPlayerWon() == VO)
             {
-                view->prompt(model->GetUser2().GetName(), P2);
+                view->prompt(model->GetPlayer2().GetName(), P2);
             }
             view->prompt(" won!\n", YELLOW);
             AskToSaveReplay();
         }
-    } while (isWonGame() == false);
-
+    } while (isWonGame() == false && CheckFullBoard() == false);
+    if (CheckFullBoard())
+    {
+        UpdateUserInDatabase(SERVER);
+        InsertMatchToDatabase();
+        view->prompt("DRAW!\n", YELLOW);
+        AskToSaveReplay();
+    }
     // Close the socket
     closesocket(clientSocket);
 
@@ -863,43 +898,16 @@ void GameController::PlayOnlineServer()
     WSACleanup();
     GameOverMenuOnline(SERVER);
 }
-bool isIPAddress(string ip)
-{
-    int count = 0;
-    for (int i = 0; i < ip.size(); i++)
-    {
-        if ((ip[i] < '0' || ip[i] > '9') && ip[i] != '.')
-        {
-            return false;
-        }
-        if (ip[i] == '.')
-        {
-            count++;
-            if (i == 0) return false;
-            if (i >= 1 && ip[i - 1] == '.') return false;
-            if (i == 2 && ip[i - 2] == '0') return false;
-            if (i >= 3 && ip[i - 1] == '0' && ip[i - 2] == '0' && ip[i - 3] != '1' && ip[i - 3] != '2') return false;
-            if (i >= 3 && ip[i - 1] >= '6' && ip[i - 1] <= '9' && ip[i - 2] == '5' && ip[i - 3] == '2') return false;
-            if (i >= 3 && ip[i - 2] >= '6' && ip[i - 2] <= '9' && ip[i - 3] == '2') return false;
-            if (i >= 4 && ip[i - 1] != '.' && ip[i - 2] != '.' && ip[i - 3] != '.' && ip[i - 4] != '.') return false;
-        }
-        if (count > 0) // Tranh truy cap ra ngoai mang string
-        {
-            if (i == ip.size() - 1)
-            {
-                if (ip[i] == '.') return false;
-                if (ip[i] == '0' && ip[i - 1] == '0' && ip[i - 2] != '1' && ip[i - 2] != '2') return false;
-                if (ip[i] >= '6' && ip[i] <= '9' && ip[i - 1] == '5' && ip[i - 2] == '2') return false;
-                if (ip[i - 1] >= '6' && ip[i - 1] <= '9' && ip[i - 2] == '2') return false;
-                if (ip[i] != '.' && ip[i - 1] != '.' && ip[i - 2] != '.' && ip[i - 3] != '.') return false;
-            }
-        }
-    }
-    if (count != 3) return false;
-    return true;
-}
 void GameController::PlayOnlineClient()
 {
+    // Cap nhat lai user moi khi choi lai game
+    string username = model->GetUser().GetUserName();
+    model->SetUser(GetUserFromDatabase(username));
+    // Dua thong tin user vao player 2
+    model->GetPlayer2().SetName(model->GetUser().GetUserName());
+    model->GetPlayer2().SetWin(model->GetUser().GetWin());
+    model->GetPlayer2().SetLose(model->GetUser().GetLose());
+    model->GetPlayer2().SetDraw(model->GetUser().GetDraw());
     string ipAddress;			            // IP Address of the server
     int port = PORT;						// Listening port # on the server
     view->prompt("(Input \"localhost\" if server is working on your PC)\n", YELLOW);
@@ -947,63 +955,32 @@ void GameController::PlayOnlineClient()
         WSACleanup();
         //delay
         Sleep(1000);
-        PlayOnline();
+        PlayOnlineAfterLogin();
         return;
     }
 
     // Do-while loop to send and receive data
-    string user1Name, user2Name, user1Move, user2Move;
+    string player1Name, player2Name, player1Move, player2Move;
     char buffer[4096];
     ZeroMemory(buffer, 4096);
     int bytesReceived = recv(sock, buffer, 4096, 0);
-    user1Name = string(buffer, 0, bytesReceived);
-    model->GetUser1().SetName(user1Name);
-    model->GetUser1().SetWin(0);
-    model->GetUser1().SetLose(0);
-    model->GetUser1().SetDraw(0);
-    if (checkPlayerName(model->GetUser1().GetName()) == 0)
-    {
-        writePlayerInFile(model->GetUser1());
-    }
-    updateCurrentResult(model->GetUser1());
-
-    system("cls");
-    SetColor(15);
-    view->prompt("List Account: \n", YELLOW);
-    SetColor(WHITE);
-    showAllRecordInFile();
-    view->prompt("Input name account you want to play or create new account:\n");
-    view->prompt("Input player's name: ");
-    model->GetUser2().Input();
-    while (model->GetUser2().GetName() == model->GetUser1().GetName())
-    {
-        view->prompt("Same name as your opponent\n", RED);
-        SetColor(WHITE);
-        view->prompt("Input player's name: ");
-        model->GetUser2().Input();
-    }
-    if (checkPlayerName(model->GetUser2().GetName()) == 0)
-    {
-        writePlayerInFile(model->GetUser2());
-    }
-    updateCurrentResult(model->GetUser2());
-    user2Name = model->GetUser2().GetName();
-    int sendResult = send(sock, user2Name.c_str(), user2Name.size() + 1, 0);
+    player1Name = string(buffer, 0, bytesReceived);
+    // Nhan ten player 1 tu server
+    model->GetPlayer1().SetName(player1Name);
+    model->GetPlayer1().SetWin(0);
+    model->GetPlayer1().SetLose(0);
+    model->GetPlayer1().SetDraw(0);
+    
+    player2Name = model->GetPlayer2().GetName();
+    int sendResult = send(sock, player2Name.c_str(), player2Name.size() + 1, 0);
     ResetReplayMoves();
     do
     {
-        // Prompt the user for some text
         if (isWonGame() == false)
         {
             system("cls");
             DrawGameScreen();
-            if (CheckFullBoard())
-            {
-                UpdateDrawRecord();
-                view->prompt("DRAW!\n", YELLOW);
-                AskToSaveReplay();
-            }
-            else
+            if (CheckFullBoard() == false)
             {
                 // Player Input Move
                 char charCol, charRow; // ky tu nguoi choi nhap
@@ -1011,8 +988,9 @@ void GameController::PlayOnlineClient()
                 if (GetTurn() == true)
                 {
                     int bytesReceived = recv(sock, buffer, 4096, 0);
-                    user1Move = string(buffer, 0, bytesReceived);
-                    assignMove(user1Move, charCol, charRow);
+                    player1Move = string(buffer, 0, bytesReceived);
+                    // Nhan nuoc di cua player 1 tu server
+                    assignMove(player1Move, charCol, charRow);
                     inputRow = (int)charRow - 48;
                     inputCol = (int)charCol - 48;
                     model->GetBoard()->SetXO(inputCol, inputRow, VX);
@@ -1021,7 +999,7 @@ void GameController::PlayOnlineClient()
                 if (GetTurn() == false)
                 {
                     view->prompt("Player ", WHITE);
-                    view->prompt(model->GetUser2().GetName() + "'s ", P2);
+                    view->prompt(model->GetPlayer2().GetName() + "'s ", P2);
                     view->prompt("turn", WHITE);
                     view->prompt(": ", YELLOW);
                     do
@@ -1033,8 +1011,8 @@ void GameController::PlayOnlineClient()
                     } while (inputCol < 0 || inputCol > model->GetBoard()->getSize() - 1 || inputRow < 0 || inputRow > model->GetBoard()->getSize() - 1 || model->GetBoard()->GetXO(inputCol, inputRow) != 0);
                     model->GetBoard()->SetXO(inputCol, inputRow, VO);
                     SaveMove(inputCol, inputRow, VO);
-                    user2Move = to_string(charCol) + "," + to_string(charRow) + ",";
-                    sendResult = send(sock, user2Move.c_str(), user2Move.size() + 1, 0);
+                    player2Move = to_string(charCol) + "," + to_string(charRow) + ",";
+                    sendResult = send(sock, player2Move.c_str(), player2Move.size() + 1, 0);
                 }
                 ChangePlayer();
                 CheckWinGame();
@@ -1042,23 +1020,28 @@ void GameController::PlayOnlineClient()
         }
         if (isWonGame() == true)
         {
-            UpdateWinLoseRecord();
+            UpdateUserInDatabase(CLIENT);
             system("cls");
             DrawGameScreen();
             view->prompt("Player ", WHITE);
             if (GetPlayerWon() == VX)
             {
-                view->prompt(model->GetUser1().GetName(), P1);
+                view->prompt(model->GetPlayer1().GetName(), P1);
             }
             else if (GetPlayerWon() == VO)
             {
-                view->prompt(model->GetUser2().GetName(), P2);
+                view->prompt(model->GetPlayer2().GetName(), P2);
             }
             view->prompt(" won!\n", YELLOW);
             AskToSaveReplay();
         }
-    } while (isWonGame() == false);
-
+    } while (isWonGame() == false && CheckFullBoard() == false);
+    if (CheckFullBoard())
+    {
+        UpdateUserInDatabase(CLIENT);
+        view->prompt("DRAW!\n", YELLOW);
+        AskToSaveReplay();
+    }
     // Gracefully close down everything
     closesocket(sock);
     GameOverMenuOnline(CLIENT);
@@ -1079,6 +1062,7 @@ void GameController::GameOverMenuOnline(int SoC)
             break;
         case '2':
             ResetGame();
+            Logout();
             MainMenu();
             break;
         default:
@@ -1086,6 +1070,13 @@ void GameController::GameOverMenuOnline(int SoC)
             break;
         }
     } while (key < '1' || key > '2');
+}
+void GameController::UserInformation()
+{
+    system("cls");
+    view->MenuHeader(USER_INFORMATION);
+    GetUserInfoFromDatabase();
+    system("pause");
 }
 void GameController::StartGame()
 {
@@ -1095,10 +1086,152 @@ void GameController::StartGame()
         MainMenu();
     }
 }
+void GameController::Login()
+{
+    string username, password;
+    view->prompt("Login:\n", YELLOW);
+    view->prompt("Username: ", WHITE);
+    username = InputStringName(8);
+    view->prompt("Password: ", WHITE);
+    password = InputStringName(8);
+    MySQLConnect sql;
+    sql.getConnection();
+    User user;
+    User temp = sql.findUserByUserNameAndPassWord(username, password);
+    if (temp.isOnline())
+    {
+        view->prompt("This account is already logged in somewhere else\n", YELLOW);
+        SetColor(WHITE);
+        system("pause");
+    }
+    else
+    {
+        user = temp;
+    }
+    model->SetUser(user);
+    if (model->GetUser().GetUserName() != "")
+    {
+        view->prompt("Login successful!\n");
+        system("pause");
+        model->GetUser().SetStatusOnline(true);
+        UpdateUserInDatabase(0);
+    }
+}
+void GameController::Register()
+{
+    string username, password;
+    view->prompt("Register:\n", YELLOW);
+    view->prompt("Username: ", WHITE);
+    username = InputStringName(8);
+    view->prompt("Password: ", WHITE);
+    password = InputStringName(8);
+    User user;
+    user.SetUserName(username);
+    user.SetPassWord(password);
+    user.SetWin(0);
+    user.SetLose(0);
+    user.SetDraw(0);
+    MySQLConnect sql;
+    sql.getConnection();
+    sql.insertUser(user);
+}
+User GameController::GetUserFromDatabase(string username)
+{
+    MySQLConnect sql;
+    sql.getConnection();
+    User user = sql.findUserByUserName(username);
+    return user;
+}
+void GameController::GetUserInfoFromDatabase()
+{
+    MySQLConnect sql;
+    sql.getConnection();
+    SetColor(WHITE);
+    sql.getUserInfoByUserName(model->GetUser().GetUserName());
+    view->prompt("History match:\n", YELLOW);
+    SetColor(WHITE);
+    sql.findMatchByUserName(model->GetUser().GetUserName());
+}
+void GameController::InsertMatchToDatabase()
+{
+    Match match;
+    match.SetPlayer1(model->GetPlayer1().GetName());
+    match.SetPlayer2(model->GetPlayer2().GetName());
+    if (isWonGame() == true && model->GetPlayerWon() == VX)
+    {
+        match.SetPlayerWin(model->GetPlayer1().GetName());
+    }
+    else if (isWonGame() == true && model->GetPlayerWon() == VO)
+    {
+        match.SetPlayerWin(model->GetPlayer2().GetName());
+    }
+    else if (isWonGame() == false && CheckFullBoard() == true)
+    {
+        match.SetPlayerWin("DRAW");
+    }
+    MySQLConnect sql;
+    sql.getConnection();
+    sql.insertMatch(match);
+}
+void GameController::UpdateUserInDatabase(int SoC)
+{
+    MySQLConnect sql;
+    sql.getConnection();
+    if (SoC == 0)
+    {
+        User user = model->GetUser();
+        sql.updateUser(user);
+        return;
+    }
+    if (isWonGame() == true && model->GetPlayerWon() == VX)
+    {
+        model->GetPlayer1().IncreWin();
+        model->GetPlayer2().IncreLose();
+    }
+    else if (isWonGame() == true && model->GetPlayerWon() == VO)
+    {
+        model->GetPlayer1().IncreLose();
+        model->GetPlayer2().IncreWin();
+    }
+    else if (isWonGame() == false && CheckFullBoard() == true)
+    {
+        model->GetPlayer1().IncreDraw();
+        model->GetPlayer2().IncreDraw();
+    }
+    if (SoC == SERVER)
+    {
+        // User 1
+        User user1 = sql.findUserByUserName(model->GetPlayer1().GetName());
+        user1.SetWin(model->GetPlayer1().GetWin());
+        user1.SetLose(model->GetPlayer1().GetLose());
+        user1.SetDraw(model->GetPlayer1().GetDraw());
+        sql.updateUser(user1);
+    }
+    else if (SoC == CLIENT)
+    {
+        // User 2
+        User user2 = sql.findUserByUserName(model->GetPlayer2().GetName());
+        user2.SetWin(model->GetPlayer2().GetWin());
+        user2.SetLose(model->GetPlayer2().GetLose());
+        user2.SetDraw(model->GetPlayer2().GetDraw());
+        sql.updateUser(user2);
+    }
+}
+void GameController::Logout()
+{
+    User user = GetUserFromDatabase(model->GetUser().GetUserName());
+    model->SetUser(user);
+    model->GetUser().SetStatusOnline(false);
+    UpdateUserInDatabase(0);
+}
 // Point Controller
 PointController::PointController(Point* model)
 {
     this->model = model;
+}
+PointController::~PointController()
+{
+    delete model;
 }
 int PointController::getX() { return model->getX(); }
 
@@ -1120,6 +1253,10 @@ BoardController::BoardController(Board* model)
 {
     this->model = model;
 }
+BoardController::~BoardController()
+{
+    delete model;
+}
 int BoardController::getSize() { return model->getSize(); }
 
 int BoardController::getXAt(int i, int j) { return model->getXAt(i, j); }
@@ -1139,6 +1276,10 @@ int BoardController::GetXO(int x, int y)
 PlayerController::PlayerController(Player* model)
 {
     this->model = model;
+}
+PlayerController::~PlayerController()
+{
+    delete model;
 }
 string PlayerController::GetName() { return model->GetName(); }
 void PlayerController::SetName(string value) { model->SetName(value); }

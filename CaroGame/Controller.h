@@ -4,9 +4,10 @@
 #include "View.h"
 using namespace Model;
 using namespace View;
-#define SERVER 0
-#define CLIENT 1
-#define PORT 54001
+#define SERVER 1
+#define CLIENT 2
+#define PORT 52001
+#define GetUserNameW  GetUserName //avoid error
 namespace Controller
 {
 	// Game Controller
@@ -17,9 +18,15 @@ namespace Controller
 		GameView* view;
 	public:
 		GameController(Game*, GameView*);
+		~GameController();
 		// Store, Get Data
-		Model::Player& GetUser1();
-		Model::Player& GetUser2();
+		Game* GetModel()
+		{
+			return model;
+		}
+		Model::Player& GetPlayer1();
+		Model::Player& GetPlayer2();
+		Model::User& GetUser();
 		void SetTurn(bool);
 		bool GetTurn();
 		Board* GetBoard();
@@ -57,7 +64,7 @@ namespace Controller
 		void ChangePlayer();
 		void PlayInBoard();
 		void ResetGame();
-
+		// Control the flow of game
 		void MainMenu();
 		void PlayWithOtherPlayer();
 		void GameOverMenu();
@@ -68,11 +75,21 @@ namespace Controller
 		void SearchPlayerByName();
 		void Guide();
 		void PlayOnline();
+		void PlayOnlineAfterLogin();
 		void PlayOnlineServer();
 		void PlayOnlineClient();
 		void GameOverMenuOnline(int);
+		void UserInformation();
 
 		void StartGame();
+		// Connect with database
+		void Login();
+		void Register();
+		User GetUserFromDatabase(string);
+		void GetUserInfoFromDatabase();
+		void InsertMatchToDatabase();
+		void UpdateUserInDatabase(int);
+		void Logout();
 	};
 	// Point Controller
 	class PointController
@@ -82,6 +99,7 @@ namespace Controller
 
 	public:
 		PointController(Point*);
+		~PointController();
 		bool setCheck(int);
 		int getX();
 		int getY();
@@ -97,6 +115,7 @@ namespace Controller
 
 	public:
 		BoardController(Board*);
+		~BoardController();
 		int getSize();
 		int getXAt(int, int);
 		int getYAt(int, int);
@@ -111,6 +130,7 @@ namespace Controller
 
 	public:
 		PlayerController(Player*);
+		~PlayerController();
 		string GetName();
 		void SetName(string);
 		void Input();

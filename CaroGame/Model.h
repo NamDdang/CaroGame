@@ -63,6 +63,35 @@ namespace Model
 		void IncreLose();
 		void IncreDraw();
 	};
+	// User
+	class User
+	{
+	private:
+		int id;
+		string username;
+		string password;
+		int win;
+		int lose;
+		int draw;
+		bool online;
+	public:
+		User();
+		User(int, string, string, int, int, int, bool);
+		int GetId();
+		void SetId(int);
+		string GetUserName();
+		void SetUserName(string);
+		string GetPassWord();
+		void SetPassWord(string);
+		int GetWin();
+		void SetWin(int);
+		int GetLose();
+		void SetLose(int);
+		int GetDraw();
+		void SetDraw(int);
+		bool isOnline();
+		void SetStatusOnline(bool);
+	};
 	// Game
 	struct Move {
 		int col, row, value;
@@ -70,23 +99,26 @@ namespace Model
 	class Game
 	{
 	private:
-		Player user1;
-		Player user2;
+		Player player1;
+		Player player2;
 		Board* board;// mot ban co
 		bool turn;// luot choi: true luot nguoi mot & false luot nguoi hai
 		bool exit; // Bien quyet dinh thoat game hay khong
 		bool wongame; // Bien kiem tra game da co nguoi thang hay chua
 		int playerwon; // Luu nguoi thang game
 		list<Move> replayMoves; // Luu nuoc di nguoi choi nhap
+		User user;
 	public:
 		Game(int);
 		~Game();
 		void Init(int);
 
-		Player& GetUser1();
-		Player& GetUser2();
-		void SetUser1(Player);
-		void SetUser2(Player);
+		Player& GetPlayer1();
+		Player& GetPlayer2();
+		void SetPlayer1(Player);
+		void SetPlayer2(Player);
+		User& GetUser();
+		void SetUser(User);
 		void SetTurn(bool);
 		bool GetTurn();
 		Board* GetBoard();
@@ -99,6 +131,26 @@ namespace Model
 		void SaveMove(int, int, int);
 		list<Move> GetReplayMoves();
 		void ResetReplayMoves();
+	};
+	// Match
+	class Match
+	{
+	private:
+		int matchId;
+		string player1;
+		string player2;
+		string playerwin;
+	public:
+		Match();
+		Match(int, string, string, string);
+		int GetMatchId();
+		void SetMatchId(int);
+		string GetPlayer1();
+		void SetPlayer1(string);
+		string GetPlayer2();
+		void SetPlayer2(string);
+		string GetPlayerWin();
+		void SetPlayerWin(string);
 	};
 }
 #endif // MODEL_H

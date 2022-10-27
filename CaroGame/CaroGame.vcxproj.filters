@@ -15,6 +15,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="SaveDataToFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -24,7 +27,7 @@
     <ClInclude Include="Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SaveDataToFile.h">
+    <ClInclude Include="MySQLConnect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="View.h">
@@ -42,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MySQLConnect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SaveDataToFile.cpp">

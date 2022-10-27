@@ -22,6 +22,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="MySQLConnect.h" />
     <ClInclude Include="SaveDataToFile.h" />
     <ClInclude Include="View.h" />
   </ItemGroup>
@@ -30,6 +31,7 @@
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="MySQLConnect.cpp" />
     <ClCompile Include="SaveDataToFile.cpp" />
     <ClCompile Include="View.cpp" />
   </ItemGroup>
@@ -129,12 +131,15 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STATIC_CONCPP;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\mysql-connector-c++-8.0.31-winx64\include\jdbc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\mysql-connector-c++-8.0.31-winx64\lib64\vs14\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mysqlcppconn-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

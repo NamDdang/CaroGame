@@ -73,12 +73,12 @@ void GameView::DrawGameScreen(Game* game)
 {
     prompt("=> ", YELLOW);
     prompt("Player ", WHITE);
-    prompt(game->GetUser1().GetName() + " ", P1);
+    prompt(game->GetPlayer1().GetName() + " ", P1);
     prompt("= ", YELLOW);
     prompt("X", WHITE);
     prompt(", ", YELLOW);
     prompt("Player ", WHITE);
-    prompt(game->GetUser2().GetName() + " ", P2);
+    prompt(game->GetPlayer2().GetName() + " ", P2);
     prompt("= ", YELLOW);
     prompt("O", WHITE);
     prompt(": \n", YELLOW);
@@ -113,6 +113,9 @@ void GameView::MenuHeader(int header)
     case PLAY_ONLINE:
         prompt("Play online", WHITE);
         break;
+    case USER_INFORMATION:
+        prompt("User's Information", WHITE);
+        break;
     default:
         break;
     }
@@ -123,7 +126,7 @@ void GameView::MainMenu()
     prompt("1.New ", RED);
     prompt("game \n", WHITE);
     prompt("2.Replay\n", RED);
-    prompt("3.Players' ", RED);
+    prompt("3.Player's ", RED);
     prompt("Information\n", WHITE);
     prompt("4.Play ", RED);
     prompt("online\n", WHITE);
@@ -204,11 +207,21 @@ void GameView::Guide()
 }
 void GameView::PlayOnline()
 {
+    prompt("1.Login\n", RED);
+    prompt("2.Register\n", RED);
+    prompt("3.Back ", RED);
+    prompt("to MAIN MENU\n", WHITE);
+    prompt("Press number to choice:", WHITE);
+}
+void GameView::PlayOnlineAfterLogin()
+{
     prompt("1.Play ", RED);
     prompt("as Server\n", WHITE);
     prompt("2.Play ", RED);
     prompt("as Client\n", WHITE);
-    prompt("3.Back ", RED);
+    prompt("3.User's ", RED);
+    prompt("Information\n", WHITE);
+    prompt("4.Back ", RED);
     prompt("to MAIN MENU\n", WHITE);
     prompt("Press number to choice:", WHITE);
 }

@@ -1,5 +1,5 @@
 ﻿#include "Model.h"
-#include <conio.h>
+
 using namespace Model;
 // Point
 Point::Point() { x = y = check = 0; }
@@ -90,35 +90,9 @@ int Board::GetXO(int x, int y)
 // Player
 string Player::GetName() { return name; }
 void Player::SetName(string value) { name = value; }
-char* InputPlayerName(const int k)
-{
-	char* kq = new char[k + 1]; // tao mang
-	int n, index = 0;
-	do
-	{
-	loop:;
-		n = _getch(); // lay ma ASCII
-		// Neu thuoc 0-9, A-Z, a-z hoac dau '.' va chuoi đang co it hon k ky tu thi cho phep
-		if (((n >= '0' && n <= '9') || (n >= 'A' && n <= 'Z') || (n >= 'a' && n <= 'z') || n == '.') && index < k)
-		{
-			cout << char(n); // xuat ky tu do ra man hinh
-			kq[index++] = n; // Luu vao mang
-		}
-		else if (n == '\b' && index > 0) // Neu nhan dau BackSpace ma chuoi khong rong
-		{
-			cout << "\b \b"; // Xoa 1 ky tu tren man hinh
-			kq[--index] = 0; // Xoa 1 ky tu trong chuoi kq
-		}
-		if (n == 13 && index == 0) goto loop; // Neu nhan Enter ma chua nhap gi thi khong cho phep
-	} while (n != 13); // Cu lap lai trong khi chua nhap Enter
-
-	kq[index] = 0; // Ket thuc chuoi
-	cout << '\n';
-	return kq;
-}
 void Player::Input()
 {
-	name = InputPlayerName(8);
+	name = InputStringName(8);
 
 	// nhap mot ten moi thi dat so tran thang, thua, hoa ve bang 0
 	win = 0;
@@ -144,12 +118,12 @@ Game::Game(int pSize)
 	turn = true;
     wongame = false;
     playerwon = 0;
-    user1.SetLose(0);
-    user1.SetWin(0);
-    user1.SetDraw(0);
-    user2.SetLose(0);
-    user2.SetWin(0);
-    user2.SetDraw(0);
+    player1.SetLose(0);
+	player1.SetWin(0);
+	player1.SetDraw(0);
+    player2.SetLose(0);
+	player2.SetWin(0);
+	player2.SetDraw(0);
 }
 
 Game::~Game() { delete board; }
@@ -161,23 +135,23 @@ void Game::Init(int pSize)
 	turn = true;
 	wongame = false;
 	playerwon = 0;
-	user1.SetLose(0);
-	user1.SetWin(0);
-	user1.SetDraw(0);
-	user2.SetLose(0);
-	user2.SetWin(0);
-	user2.SetDraw(0);
+	player1.SetLose(0);
+	player1.SetWin(0);
+	player1.SetDraw(0);
+	player2.SetLose(0);
+	player2.SetWin(0);
+	player2.SetDraw(0);
 }
 
-Player& Game::GetUser1() { return user1; }
-Player& Game::GetUser2() { return user2; }
-void Game::SetUser1(Player value)
+Player& Game::GetPlayer1() { return player1; }
+Player& Game::GetPlayer2() { return player2; }
+void Game::SetPlayer1(Player value)
 {
-	user1 = value;
+	player1 = value;
 }
-void Game::SetUser2(Player value)
+void Game::SetPlayer2(Player value)
 {
-	user2 = value;
+	player2 = value;
 }
 void Game::SetTurn(bool value) { turn = value; }
 bool Game::GetTurn() { return turn; }
@@ -214,4 +188,122 @@ list<Move> Game::GetReplayMoves()
 }
 void Game::ResetReplayMoves() {
 	replayMoves.clear();
+}
+User& Game::GetUser() { return user;}
+void Game::SetUser(User value)
+{
+	user = value;
+}
+// User
+User::User()
+{
+	online = false;
+}
+User::User(int id, string username, string password, int win, int lose , int draw, bool online)
+{
+	this->id = id;
+	this->username = username;
+	this->password = password;
+	this->win = win;
+	this->lose = lose;
+	this->draw = draw;
+	this->online = online;
+}
+int User::GetId()
+{
+	return id;
+}
+void User::SetId(int id)
+{
+	this->id = id;
+}
+string User::GetUserName()
+{
+	return username;
+}
+void User::SetUserName(string username)
+{
+	this->username = username;
+}
+string User::GetPassWord()
+{
+	return password;
+}
+void User::SetPassWord(string password)
+{
+	this->password = password;
+}
+int User::GetWin()
+{
+	return win;
+}
+void User::SetWin(int win)
+{
+	this->win = win;
+}
+int User::GetLose()
+{
+	return lose;
+}
+void User::SetLose(int lose)
+{
+	this->lose = lose;
+}
+int User::GetDraw()
+{
+	return draw;
+}
+void User::SetDraw(int draw)
+{
+	this->draw = draw;
+}
+bool User::isOnline() { return online; }
+void User::SetStatusOnline(bool value)
+{
+	online = value;
+}
+
+// Match
+Match::Match()
+{
+
+}
+Match::Match(int matchId, string player1, string player2, string playerwin)
+{
+	this->matchId = matchId;
+	this->player1 = player1;
+	this->player2 = player2;
+	this->playerwin = playerwin;
+}
+int Match::GetMatchId()
+{
+	return matchId;
+}
+void Match::SetMatchId(int matchId)
+{
+	this->matchId = matchId;
+}
+string Match::GetPlayer1()
+{
+	return player1;
+}
+void Match::SetPlayer1(string player1)
+{
+	this->player1 = player1;
+}
+string Match::GetPlayer2()
+{
+	return player2;
+}
+void Match::SetPlayer2(string player2)
+{
+	this->player2 = player2;
+}
+string Match::GetPlayerWin()
+{
+	return playerwin;
+}
+void Match::SetPlayerWin(string playerwin)
+{
+	this->playerwin = playerwin;
 }
