@@ -19,21 +19,29 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="Controller.h" />
-    <ClInclude Include="Model.h" />
-    <ClInclude Include="MySQLConnect.h" />
-    <ClInclude Include="SaveDataToFile.h" />
-    <ClInclude Include="View.h" />
+    <ClInclude Include="Header Files\Controller\Controller.h" />
+    <ClInclude Include="Header Files\Controller\MySQLConnect.h" />
+    <ClInclude Include="Header Files\Controller\FileManipulate.h" />
+    <ClInclude Include="Header Files\Model\Board.h" />
+    <ClInclude Include="Header Files\Model\Game.h" />
+    <ClInclude Include="Header Files\Model\Match.h" />
+    <ClInclude Include="Header Files\Model\Player.h" />
+    <ClInclude Include="Header Files\Model\Point.h" />
+    <ClInclude Include="Header Files\Model\User.h" />
+    <ClInclude Include="Header Files\View\View.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Common.cpp" />
-    <ClCompile Include="Controller.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="MySQLConnect.cpp" />
-    <ClCompile Include="SaveDataToFile.cpp" />
-    <ClCompile Include="View.cpp" />
+    <ClCompile Include="Source Files\Controller\Controller.cpp" />
+    <ClCompile Include="Source Files\Controller\MySQLConnect.cpp" />
+    <ClCompile Include="Source Files\Controller\FileManipulate.cpp" />
+    <ClCompile Include="Source Files\Main\main.cpp" />
+    <ClCompile Include="Source Files\Model\Board.cpp" />
+    <ClCompile Include="Source Files\Model\Game.cpp" />
+    <ClCompile Include="Source Files\Model\Match.cpp" />
+    <ClCompile Include="Source Files\Model\Player.cpp" />
+    <ClCompile Include="Source Files\Model\Point.cpp" />
+    <ClCompile Include="Source Files\Model\User.cpp" />
+    <ClCompile Include="Source Files\View\View.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -46,26 +54,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -133,12 +141,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>STATIC_CONCPP;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\mysql-connector-c++-8.0.31-winx64\include\jdbc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\mysql-connector-c++-8.0.31-winx64\include\jdbc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Users\Admin\Documents\Visual Studio 2019\Code Snippets\Visual C++\CaroGame\mysql-connector-c++-8.0.31-winx64\lib64\vs14\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\mysql-connector-c++-8.0.31-winx64\lib64\vs14\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>mysqlcppconn-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
